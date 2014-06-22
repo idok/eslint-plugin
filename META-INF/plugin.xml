@@ -1,0 +1,57 @@
+<idea-plugin version="2">
+    <id>com.wix.eslint</id>
+    <name>ESLint</name>
+    <version>1.0.1</version>
+    <vendor email="idok@wix.com" url="http://www.wix.com">Wix</vendor>
+    <category>HTML/JavaScript Development</category>
+    <description><![CDATA[
+      ESLint intellij integration.<br>
+      <em>Support displaying eslint warnings as intellij inspections</em>
+    ]]></description>
+
+    <depends>com.intellij.modules.lang</depends>
+    <!--<depends>com.intellij.modules.platform</depends>-->
+    <depends optional="true">JavaScript</depends>
+
+    <change-notes><![CDATA[
+      First version.<br>
+      <em>Not stable...</em>
+    ]]>
+    </change-notes>
+
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="131"/>
+
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+        <projectService serviceImplementation="com.eslint.settings.Settings"/>
+        <projectConfigurable implementation="com.eslint.settings.ESLintSettingsPage"/>
+        <localInspection groupPath="JavaScript" language="JavaScript" shortName="ESLintInspection"
+                         enabledByDefault="true" level="WARNING"
+                         bundle="com.eslint.ESLintBundle"
+                         implementationClass="com.eslint.ESLintInspection" unfair="true" runForWholeFile="true"
+                         displayName="ESLint" groupKey="eslint.inspection.group.name"/>
+    </extensions>
+
+    <application-components>
+        <!-- Add your application components here -->
+    </application-components>
+
+    <project-components>
+        <!-- Add your project components here -->
+        <component>
+            <implementation-class>com.eslint.ESLintProjectComponent</implementation-class>
+        </component>
+    </project-components>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+
+</idea-plugin>
