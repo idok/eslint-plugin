@@ -15,7 +15,11 @@ $ npm install -g eslint<br/>
 
 ### Settings ###
 To get started, you need to set the ESLint plugin settings.<br/>
-Go to preferences, ESLint plugin page and check the Enable plugin.<br/>
-Set the path to the eslint bin file. should point to <project path>node_modules/eslint/bin/eslint.js if you installed locally or /usr/local/bin/eslint if you installed globally.<br/>
-Set the .eslintrc file, or eslint will use the default settings.<br/>
-You can also set a path to a custom rules directory.<br/>
+<ul>
+    <li>Go to preferences, ESLint plugin page and check the Enable plugin.</li>
+    <li>Set the path to the nodejs interpreter bin file.</li>
+    <li>Select whether to let eslint search for .eslintrc file</li>
+    <li>Set the path to the eslint bin file. should point to <project path>node_modules/eslint/bin/eslint.js if you installed locally or /usr/local/bin/eslint if you installed globally.</li>
+    <li>Set the .eslintrc file, or eslint will use the default settings.</li>
+    <li>You can also set a path to a custom rules directory.</li>
+</ul>
