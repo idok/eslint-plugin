@@ -7,7 +7,7 @@
     <description><![CDATA[
       ESLint intellij integration.<br>
       <p>Support displaying eslint warnings as intellij inspections</p>
-      <p>Qix fixes for several rules</p>
+      <p>Quick fixes for several rules</p>
       <p>Support for custom eslint rules</p>
     ]]></description>
 

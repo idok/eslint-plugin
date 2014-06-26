@@ -1,13 +1,16 @@
 # ESLint Plugin #
 
-<a href="http://eslint.org/">ESLint</a> is The pluggable linting utility for JavaScript. see more <a href="http://eslint.org/">here</a>.<br/>
+[ESLint](http://eslint.org/) is The pluggable linting utility for JavaScript. see more [here](http://eslint.org/).<br/>
 ESLint plugin for WebStorm, PHPStorm and other Idea family IDE with Javascript plugin, provides integration with ESLint and shows errors and warnings inside the editor.
+* Support displaying eslint warnings as intellij inspections
+* Quick fixes for several rules
+* Support for custom eslint rules
 
 ## Getting started ##
 ### Prerequisites ###
-If you do not have nodejs installed on your machine, download and install <a href="http://nodejs.org/">NodeJS</a>.<br/>
+If you do not have nodejs installed on your machine, download and install [NodeJS](http://nodejs.org/).<br/>
 
-Install eslint npm package <a href="https://www.npmjs.org/package/eslint">eslint npm</a>:<br/>
+Install eslint npm package [eslint npm](https://www.npmjs.org/package/eslint)</a>:<br/>
 `$ cd <project path>`<br/>
 `$ npm install eslint`<br/>
 Or, install eslint globally:<br/>
