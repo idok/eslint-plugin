@@ -9,10 +9,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.ResourceBundle;
 
-/**
- * User: Andrey.Vokin
- * Date: 2/20/12
- */
 public final class ESLintBundle {
 
     public static String message(@NotNull @PropertyKey(resourceBundle = BUNDLE) String key, @NotNull Object... params) {
@@ -22,6 +18,9 @@ public final class ESLintBundle {
     @NonNls
     public static final String BUNDLE = "com.eslint.ESLintBundle";
     private static Reference<ResourceBundle> ourBundle;
+
+    @NonNls
+    public static final String LOG_ID = "#com.eslint";
 
     private ESLintBundle() {
     }

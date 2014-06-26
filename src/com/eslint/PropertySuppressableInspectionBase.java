@@ -13,14 +13,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiNamedElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * User: cdr
- */
 public abstract class PropertySuppressableInspectionBase extends LocalInspectionTool implements CustomSuppressableInspectionTool {
     private static final Logger LOG = Logger.getInstance("#com.intellij.lang.properties.PropertySuppressableInspectionBase");
 
@@ -30,6 +28,8 @@ public abstract class PropertySuppressableInspectionBase extends LocalInspection
     }
 
     public SuppressIntentionAction[] getSuppressActions(final PsiElement element) {
+        PsiNamedElement pe = getProblemElement(element);
+
         return new SuppressIntentionAction[]{new SuppressForStatement(getShortName()), new SuppressForFile(getShortName())};
     }
 
@@ -99,6 +99,9 @@ public abstract class PropertySuppressableInspectionBase extends LocalInspection
             final PsiFile file = element.getContainingFile();
             if (!FileModificationService.getInstance().prepareFileForWrite(file)) return;
 
+//            InspectionManager inspectionManager = InspectionManager.getInstance(project);
+//            ProblemDescriptor descriptor = inspectionManager.createProblemDescriptor(element, element, "", ProblemHighlightType.GENERIC_ERROR_OR_WARNING, false);
+
             final JSElement property = PsiTreeUtil.getParentOfType(element, JSElement.class);
             LOG.assertTrue(property != null);
             final int start = property.getTextRange().getStartOffset();
@@ -140,7 +143,8 @@ public abstract class PropertySuppressableInspectionBase extends LocalInspection
             @NonNls final Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
             LOG.assertTrue(doc != null, file);
 
-            doc.insertString(0, "// eslint suppress inspection \"" + rule + "\" for whole file\n");
+//            doc.insertString(0, "// eslint suppress inspection \"" + rule + "\" for whole file\n");
+            doc.insertString(0, "/* eslint-disable */\n");
         }
     }
 }

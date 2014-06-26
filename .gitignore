@@ -1,2 +1,8 @@
+### OSX ###
+.DS_Store
+
 .idea/
 out/
+
+*.iml
+eslint-plugin.jar

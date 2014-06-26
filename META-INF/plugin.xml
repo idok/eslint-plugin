@@ -1,21 +1,24 @@
 <idea-plugin version="2">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.1</version>
-    <vendor email="idok@wix.com" url="http://www.wix.com">Wix</vendor>
+    <version>1.0.7</version>
+    <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
       ESLint intellij integration.<br>
-      <em>Support displaying eslint warnings as intellij inspections</em>
+      <p>Support displaying eslint warnings as intellij inspections</p>
+      <p>Qix fixes for several rules</p>
+      <p>Support for custom eslint rules</p>
     ]]></description>
 
     <depends>com.intellij.modules.lang</depends>
     <!--<depends>com.intellij.modules.platform</depends>-->
-    <depends optional="true">JavaScript</depends>
+    <depends>JavaScript</depends>
 
     <change-notes><![CDATA[
-      First version.<br>
-      <em>Not stable...</em>
+       <p>1.0.7 Fix ClassNotFound Error</p>
+       <p>1.0.6 Add configuration options for node interpreter and eslintrc search, bug fixes</p>
+       <p>1.0.1 First version.</p>
     ]]>
     </change-notes>
 
