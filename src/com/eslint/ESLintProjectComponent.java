@@ -28,7 +28,10 @@ public class ESLintProjectComponent implements ProjectComponent {
     public String rulesPath;
     public String eslintExecutable;
     public String nodeInterpreter;
+    public boolean treatAsWarnings;
     public boolean pluginEnabled;
+
+    public static final String PLUGIN_NAME = "ESLint plugin";
 
     public ESLintProjectComponent(Project project) {
         this.project = project;
@@ -106,6 +109,7 @@ public class ESLintProjectComponent implements ProjectComponent {
         eslintRcFile = settings.eslintRcFile;
         rulesPath = settings.rulesPath;
         nodeInterpreter = settings.nodeInterpreter;
+        treatAsWarnings = settings.treatAllEslintIssuesAsWarnings;
         pluginEnabled = settings.pluginEnabled;
 
         settingValidStatus = true;
@@ -169,6 +173,4 @@ public class ESLintProjectComponent implements ProjectComponent {
         Notification errorNotification = new Notification(PLUGIN_NAME, PLUGIN_NAME, content, type);
         Notifications.Bus.notify(errorNotification);
     }
-
-    public static final String PLUGIN_NAME = "ESLint plugin";
 }
