@@ -60,14 +60,14 @@ public final class ESLintCommandLineUtil {
         if (output.isTimeout()) {
             throw new ExecutionException("Command '" + commandLine.getCommandLineString() + "' is timed out.");
         }
-        if (exitCode != 0) {
-            throw new ExecutionException("Exit code of '" + commandLine.getCommandLineString() + "' is " + exitCode + ". Stdout:\n" + output.getStdout() + "\n\nstderr:\n" + output.getStderr());
-        }
+//        if (exitCode != 0) {
+//            throw new ExecutionException("Exit code of '" + commandLine.getCommandLineString() + "' is " + exitCode + ". Stdout:\n" + output.getStdout() + "\n\nstderr:\n" + output.getStderr());
+//        }
 
-        String stdout = output.getStdout();
-        if (StringUtil.isEmptyOrSpaces(stdout)) {
-            throw new ExecutionException("Got empty stdout, exit code: 0, stderr:\n" + output.getStderr());
-        }
+//        String stdout = output.getStdout();
+//        if (StringUtil.isEmptyOrSpaces(stdout)) {
+//            throw new ExecutionException("Got empty stdout, exit code: 0, stderr:\n" + output.getStderr());
+//        }
         return output;
     }
 
@@ -84,6 +84,15 @@ public final class ESLintCommandLineUtil {
         } else {
             commandLine.setExePath(settings.node);
             commandLine.addParameter(settings.eslintExecutablePath);
+        }
+        commandLine.addParameter(settings.targetFile);
+        if (StringUtil.isNotEmpty(settings.config)) {
+            commandLine.addParameter("-c");
+            commandLine.addParameter(settings.config);
+        }
+        if (StringUtil.isNotEmpty(settings.rules)) {
+            commandLine.addParameter("--rulesdir");
+            commandLine.addParameter("['" + settings.rules + "']");
         }
         return commandLine;
     }

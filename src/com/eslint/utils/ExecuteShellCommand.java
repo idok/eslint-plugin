@@ -80,9 +80,7 @@ public class ExecuteShellCommand {
                 }
 
                 while (matcher.find()) {
-                    LOG.debug("I found the text" +
-                                    " \"%s\" starting at " +
-                                    "index %d and ending at index %d.%n",
+                    LOG.debug("I found the text \"%s\" starting at index %d and ending at index %d.%n",
                             matcher.group(),
                             matcher.start(),
                             matcher.end());

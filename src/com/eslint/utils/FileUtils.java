@@ -4,6 +4,7 @@ import com.eslint.ESLintBundle;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Function;
 import com.intellij.util.SmartList;
@@ -25,6 +26,55 @@ public final class FileUtils {
 
     // WildcardFileNameMatcher w = new WildcardFileNameMatcher("**/.eslintrc");
 
+    public static String makeRelative(VirtualFile root, VirtualFile absolutePath) {
+        //FileUtil.getRelativePath(path, file.getPath().replace('/', File.separatorChar), File.separatorChar)
+        return VfsUtil.getRelativePath(absolutePath, root, File.separatorChar);
+    }
+
+    public static String makeRelative(Project project, VirtualFile absolutePath) {
+        //FileUtil.getRelativePath(path, file.getPath().replace('/', File.separatorChar), File.separatorChar)
+        return makeRelative(project.getBaseDir(), absolutePath);
+    }
+
+    public static boolean hasExtension(String file, String extension) {
+        return file.endsWith(extension);
+    }
+
+    public static String removeExtension(String file) {
+        int i = file.lastIndexOf('.');
+        return file.substring(0, i);
+    }
+
+    //file.substring(0, file.length() - ".js".length())
+
+    /**
+     * resolve a relative or absolute path
+     * @param project parent path
+     * @param path path to file / folder
+     * @return
+     */
+    public static String resolvePath(Project project, String path) {
+        if (StringUtils.isEmpty(path)) {
+            return null;
+        }
+        File filePath = new File(path);
+        if (filePath.isAbsolute()) {
+            if (!filePath.exists()) {
+                return null;
+            }
+            return path;
+        } else {
+            if (project == null) {
+                return null;
+            }
+            VirtualFile child = project.getBaseDir().findFileByRelativePath(path);
+            if (child == null || !child.exists()) {
+                return null;
+            }
+            return child.getPath();
+        }
+    }
+
     @NotNull
     public static List<String> displayDirectoryContents(@NotNull File projectRoot, @NotNull File dir, @NotNull FilenameFilter filter) {
         List<String> ret = listFiles(projectRoot, dir, filter);
@@ -45,6 +95,7 @@ public final class FileUtils {
         //        allFiles.addAll(ret); //Arrays.asList(curFiles));
         return ContainerUtil.map(curFiles, new Function<String, String>() {
             public String fun(String curFile) {
+                // TODO replace with makeRelative
                 return new File(dir, curFile).getAbsolutePath().substring(projectRoot.getAbsolutePath().length() + 1);
             }
         });
