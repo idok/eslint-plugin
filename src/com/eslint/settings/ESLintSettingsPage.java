@@ -2,6 +2,7 @@ package com.eslint.settings;
 
 import com.eslint.ESLintProjectComponent;
 import com.eslint.utils.ESLintDetectionUtil;
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.javascript.nodejs.NodeDetectionUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -30,8 +31,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -40,6 +39,9 @@ import java.util.List;
 
 //path to JavaScript: JSBundle.message("settings.javascript.root.configurable.name", new Object[0])
 public class ESLintSettingsPage implements Configurable {
+    public static final String FIX_IT = "Fix it";
+    public static final String HOW_TO_USE_ESLINT = "How to Use ESLint";
+    public static final String HOW_TO_USE_LINK = "https://github.com/idok/eslint-plugin";
     protected Project project;
 
     private JCheckBox pluginEnabledCheckbox;
@@ -56,6 +58,7 @@ public class ESLintSettingsPage implements Configurable {
     private JLabel rulesDirectoryLabel;
     private JLabel pathToEslintBinLabel;
     private JLabel nodeInterpreterLabel;
+    private JCheckBox treatAllEslintIssuesCheckBox;
     private final PackagesNotificationPanel myPackagesNotificationPanel;
 
     public ESLintSettingsPage(@NotNull final Project project) {
@@ -123,24 +126,25 @@ public class ESLintSettingsPage implements Configurable {
         rulesDirectoryLabel.setEnabled(enabled);
         pathToEslintBinLabel.setEnabled(enabled);
         nodeInterpreterLabel.setEnabled(enabled);
+        treatAllEslintIssuesCheckBox.setEnabled(enabled);
     }
 
     private void validate() {
         List<ESLintValidationInfo> errors = new ArrayList<ESLintValidationInfo>();
         if (!validatePath(eslintBinField2.getChildComponent().getText(), false)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(eslintBinField2.getChildComponent().getTextEditor(), "Path to eslint is invalid {{LINK}}", "Fix it");
+            ESLintValidationInfo error = new ESLintValidationInfo(eslintBinField2.getChildComponent().getTextEditor(), "Path to eslint is invalid {{LINK}}", FIX_IT);
             errors.add(error);
         }
         if (!validatePath(eslintrcFile.getChildComponent().getText(), true)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(eslintrcFile.getChildComponent().getTextEditor(), "Path to eslintrc is invalid {{LINK}}", "Fix it"); //Please correct path to
+            ESLintValidationInfo error = new ESLintValidationInfo(eslintrcFile.getChildComponent().getTextEditor(), "Path to eslintrc is invalid {{LINK}}", FIX_IT); //Please correct path to
             errors.add(error);
         }
         if (!validatePath(nodeInterpreterField.getChildComponent().getText(), false)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(nodeInterpreterField.getChildComponent().getTextEditor(), "Path to node interpreter is invalid {{LINK}}", "Fix it");
+            ESLintValidationInfo error = new ESLintValidationInfo(nodeInterpreterField.getChildComponent().getTextEditor(), "Path to node interpreter is invalid {{LINK}}", FIX_IT);
             errors.add(error);
         }
         if (!validateDirectory(rulesPathField.getText(), true)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(rulesPathField, "Path to rules is invalid {{LINK}}", "Fix it");
+            ESLintValidationInfo error = new ESLintValidationInfo(rulesPathField, "Path to rules is invalid {{LINK}}", FIX_IT);
             errors.add(error);
         }
         if (errors.isEmpty()) {
@@ -269,6 +273,7 @@ public class ESLintSettingsPage implements Configurable {
                 || !eslintBinField2.getChildComponent().getText().equals(getSettings().eslintExecutable)
                 || !nodeInterpreterField.getChildComponent().getText().equals(getSettings().nodeInterpreter)
                 || !eslintrcFile.getChildComponent().getText().equals(getSettings().eslintRcFile)
+                || treatAllEslintIssuesCheckBox.isSelected() != getSettings().treatAllEslintIssuesAsWarnings
                 || !rulesPathField.getText().equals(getSettings().rulesPath);
     }
 
@@ -285,7 +290,9 @@ public class ESLintSettingsPage implements Configurable {
         settings.nodeInterpreter = nodeInterpreterField.getChildComponent().getText();
         settings.eslintRcFile = useProjectEslintrcRadioButton.isSelected() ? eslintrcFile.getChildComponent().getText() : "";
         settings.rulesPath = rulesPathField.getText();
+        settings.treatAllEslintIssuesAsWarnings = treatAllEslintIssuesCheckBox.isSelected();
         project.getComponent(ESLintProjectComponent.class).validateSettings();
+        DaemonCodeAnalyzer.getInstance(project).restart();
     }
 
     protected void loadSettings() {
@@ -298,6 +305,7 @@ public class ESLintSettingsPage implements Configurable {
         useProjectEslintrcRadioButton.setSelected(StringUtils.isNotEmpty(settings.eslintRcFile));
         searchForEslintrcInRadioButton.setSelected(StringUtils.isEmpty(settings.eslintRcFile));
         eslintrcFile.setEnabled(useProjectEslintrcRadioButton.isSelected());
+        treatAllEslintIssuesCheckBox.setSelected(settings.treatAllEslintIssuesAsWarnings);
         setEnabledState(settings.pluginEnabled);
     }
 
@@ -316,7 +324,7 @@ public class ESLintSettingsPage implements Configurable {
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
-        usageLink = SwingHelper.createWebHyperlink("How to Use ESLint", "https://github.com/idok/eslint-plugin");
+        usageLink = SwingHelper.createWebHyperlink(HOW_TO_USE_ESLINT, HOW_TO_USE_LINK);
     }
 
     private void showErrors(@NotNull List<ESLintValidationInfo> errors) {
