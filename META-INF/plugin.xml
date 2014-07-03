@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.7</version>
+    <version>1.0.10</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -16,6 +16,9 @@
     <depends>JavaScript</depends>
 
     <change-notes><![CDATA[
+       <p>1.0.10 Add annotation and completion to eslintrc</p>
+       <p>1.0.9 Fix performance issue</p>
+       <p>1.0.8 Performance improvements, bug fixes, refresh inspection status when eslintrc or config change</p>
        <p>1.0.7 Fix ClassNotFound Error</p>
        <p>1.0.6 Add configuration options for node interpreter and eslintrc search, bug fixes</p>
        <p>1.0.1 First version.</p>
@@ -35,11 +38,22 @@
         <!-- Add your extensions here -->
         <projectService serviceImplementation="com.eslint.settings.Settings"/>
         <projectConfigurable implementation="com.eslint.settings.ESLintSettingsPage"/>
-        <localInspection groupPath="JavaScript" language="JavaScript" shortName="ESLintInspection"
-                         enabledByDefault="true" level="WARNING"
+        <localInspection language="JavaScript" groupPath="JavaScript" shortName="ESLintInspection"
+                         enabledByDefault="true" level="ERROR"
                          bundle="com.eslint.ESLintBundle"
-                         implementationClass="com.eslint.ESLintInspection" unfair="true" runForWholeFile="true"
+                         implementationClass="com.eslint.ESLintInspection"
                          displayName="ESLint" groupKey="eslint.inspection.group.name"/>
+        <!--unfair="true" runForWholeFile="true" level="WARNING" -->
+        <externalAnnotator language="JavaScript" implementationClass="com.eslint.ESLintExternalAnnotator" />
+
+        <!-- annotate .eslintrc -->
+        <projectService serviceImplementation="com.eslint.config.ESLintConfigFileChangeTracker"/>
+        <fileTypeFactory implementation="com.eslint.config.ESLintConfigFileTypeFactory"/>
+        <completion.contributor order="first" language="JavaScript" implementationClass="com.eslint.config.ESLintConfigCompletionContributor"/>
+        <annotator language="JSON" implementationClass="com.eslint.config.ESLintConfigFileAnnotator"/>
+
+        <!--<lang.documentationProvider language="JSON" implementationClass="com.eslint.config.ESLintConfigDocumentationProvider"/>-->
+        <!--<psi.referenceContributor language="JSON" implementation="com.eslint.config.ESLintConfigReferenceContributor"/>-->
     </extensions>
 
     <application-components>
