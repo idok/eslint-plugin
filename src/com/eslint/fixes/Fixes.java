@@ -36,6 +36,31 @@ public final class Fixes {
         if (rule.equals("no-negated-in-lhs")) {
             return NoNegatedInLhsFix.INSTANCE;
         }
+        if (rule.equals("no-lonely-if")) {
+            return NoLonelyIfFix.INSTANCE;
+        }
+        return null;
+    }
+
+    public static BaseActionFix getFixForRule(String rule, PsiElement element) {
+        if (rule.equals("strict")) {
+            return new StrictActionFix(element);
+        }
+        if (rule.equals("no-new-object")) {
+            return new NoNewObjectActionFix(element);
+        }
+        if (rule.equals("no-array-constructor")) {
+            return new NoArrayConstructorActionFix(element);
+        }
+        if (rule.equals("eqeqeq")) {
+            return new EqeqeqActionFix(element);
+        }
+        if (rule.equals("no-negated-in-lhs")) {
+            return new NoNegatedInLhsActionFix(element);
+        }
+        if (rule.equals("no-lonely-if")) {
+            return new NoLonelyIfActionFix(element);
+        }
         return null;
     }
 
@@ -183,7 +208,7 @@ public final class Fixes {
 
         @NotNull
         public String getName() {
-            return ESLintBundle.message("inspection.fix.eqeqeq");
+            return ESLintBundle.message("inspection.fix.no-negated-in-lhs");
         }
 
         @NotNull
@@ -193,33 +218,34 @@ public final class Fixes {
 
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
             PsiElement element = descriptor.getPsiElement();
-//            PsiElement parent = element == null ? null : element.getParent();
-            PsiElement binaryElem = PsiTreeUtil.findFirstParent(element, new Condition<PsiElement>() {
-                @Override
-                public boolean value(PsiElement psiElement) {
-                    return psiElement instanceof JSBinaryExpression;
-                }
-            });
-//            JSBinaryExpression binary = (JSBinaryExpression) binaryElem;
-//            binary.getLOperand().replace(binary.getLOperand().getLastChild());
-////            final JSExpressionCodeFragment parenthesis = JSElementFactory.createExpressionCodeFragment(project, "()", binary.getParent());
-//            ASTNode parenthesis = JSChangeUtil.createStatementFromText(project, "()");
-////            PsiUtil.deparenthesizeExpression()
-//            parenthesis.addChild(binary.copy().getNode());
-////            parenthesis.getFirstChild().add(binary.copy());
-//
-//            binary.replace(parenthesis.getFirstChild());
+            JSBinaryExpression binary = PsiTreeUtil.getParentOfType(element, JSBinaryExpression.class);
+            JSBinaryExpression binaryClone = (JSBinaryExpression) binary.copy();
+            binaryClone.getLOperand().replace(binary.getLOperand().getLastChild());
+            ASTNode negate = JSChangeUtil.createStatementFromText(project, "!(true)");
+            JSParenthesizedExpression paren = PsiTreeUtil.getChildOfType(negate.getPsi().getFirstChild(), JSParenthesizedExpression.class);
+            paren.getInnerExpression().replace(binaryClone);
+            binary.replace(negate.getPsi());
+        }
+    }
 
-            JSBinaryExpression binary = (JSBinaryExpression) binaryElem;
-            binary.getLOperand().replace(binary.getLOperand().getLastChild());
-//            final JSExpressionCodeFragment parenthesis = JSElementFactory.createExpressionCodeFragment(project, "()", binary.getParent());
-            ASTNode parenthesis = JSChangeUtil.createStatementFromText(project, "()");
-//            PsiUtil.deparenthesizeExpression()
-            parenthesis.addChild(binary.copy().getNode());
-//            parenthesis.getFirstChild().add(binary.copy());
+    public static class NoLonelyIfFix implements LocalQuickFix {
+        private static final NoLonelyIfFix INSTANCE = new NoLonelyIfFix();
 
-            binaryElem.getParent().getNode().replaceChild(binary.getNode(), parenthesis);
-//            binary.getNode().replaceChild(parenthesis.getFirstChild());
+        @NotNull
+        public String getName() {
+            return ESLintBundle.message("inspection.fix.no-lonely-if");
+        }
+
+        @NotNull
+        public String getFamilyName() {
+            return getName();
+        }
+
+        public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
+            PsiElement element = descriptor.getPsiElement();
+            JSIfStatement ifStatement = PsiTreeUtil.getParentOfType(element, JSIfStatement.class);
+            JSIfStatement parentIf = PsiTreeUtil.getParentOfType(ifStatement, JSIfStatement.class);
+            parentIf.getElse().replace(ifStatement);
         }
     }
 
