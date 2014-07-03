@@ -11,10 +11,14 @@ ESLint plugin for WebStorm, PHPStorm and other Idea family IDE with Javascript p
 If you do not have nodejs installed on your machine, download and install [NodeJS](http://nodejs.org/).<br/>
 
 Install eslint npm package [eslint npm](https://www.npmjs.org/package/eslint)</a>:<br/>
-`$ cd <project path>`<br/>
-`$ npm install eslint`<br/>
+```bash
+$ cd <project path>
+$ npm install eslint
+```
 Or, install eslint globally:<br/>
-`$ npm install -g eslint`<br/>
+```bash
+$ npm install -g eslint
+```
 
 ### Settings ###
 To get started, you need to set the ESLint plugin settings:<br/>
