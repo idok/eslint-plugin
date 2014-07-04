@@ -27,8 +27,6 @@ import java.util.List;
 public class ESLintTest extends LightPlatformCodeInsightFixtureTestCase {
     @Override
     protected String getTestDataPath() {
-//        System.out.println( TestUtils.getTestDataPath() );
-//        return "/Users/idok/Projects/eslint-plugin/testData";
         return TestUtils.getTestDataPath();
     }
 
@@ -52,7 +50,7 @@ public class ESLintTest extends LightPlatformCodeInsightFixtureTestCase {
         settings.pluginEnabled = true;
         myFixture.configureByFile(file);
         myFixture.enableInspections(new ESLintInspection());
-        myFixture.checkHighlighting(false, false, true);
+        myFixture.checkHighlighting(true, false, true);
     }
 
     protected void doTest() {
