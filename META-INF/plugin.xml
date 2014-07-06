@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.10</version>
+    <version>1.0.11</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -9,6 +9,7 @@
       <p>Support displaying eslint warnings as intellij inspections</p>
       <p>Quick fixes for several rules</p>
       <p>Support for custom eslint rules</p>
+      <p>Support for eslint config annotation and completion</p>
     ]]></description>
 
     <depends>com.intellij.modules.lang</depends>
@@ -16,7 +17,8 @@
     <depends>JavaScript</depends>
 
     <change-notes><![CDATA[
-       <p>1.0.10 Add annotation and completion to eslintrc, add version to settings dialog</p>
+       <p>1.0.11 </p>
+       <p>1.0.10 Add annotation and completion to eslintrc, add version to settings dialog, fix eslintrc not loading bug</p>
        <p>1.0.9 Fix performance issue</p>
        <p>1.0.8 Performance improvements, bug fixes, refresh inspection status when eslintrc or config change</p>
        <p>1.0.7 Fix ClassNotFound Error</p>
