@@ -10,30 +10,33 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 public final class ESLintSchema {
-//    public RootProp properties;
+    public static final String RULES = "rules";
+
+    //    public RootProp properties;
 
 //    public static final SchemaJsonObject instance = load();
 
-    public static SchemaJsonObject ROOT = new SchemaJsonObject("root", PropertyType.OBJECT, "", new BaseType[]{
-            new SchemaJsonObject("env", PropertyType.OBJECT, "env",
-                    new BaseType[]{
-                            new BaseType("amd", PropertyType.BOOLEAN, "amd"),
-                            new BaseType("node", PropertyType.BOOLEAN, "node"),
-                            new BaseType("browser", PropertyType.BOOLEAN, "browser")
-                    }
-            ),
-            new SchemaJsonObject("globals", PropertyType.OBJECT, "globals", new BaseType[]{
-                    new BaseType(BaseType.ANY_NAME, PropertyType.BOOLEAN, "")
-            }),
-            new SchemaJsonObject("rules", PropertyType.OBJECT, "rules", new BaseType[]{})
-    }
-    );
+    //    public static SchemaJsonObject ROOT = new SchemaJsonObject("root", PropertyType.OBJECT, "", new BaseType[]{
+//            new SchemaJsonObject("env", PropertyType.OBJECT, "env",
+//                    new BaseType[]{
+//                            new BaseType("amd", PropertyType.BOOLEAN, "amd"),
+//                            new BaseType("node", PropertyType.BOOLEAN, "node"),
+//                            new BaseType("browser", PropertyType.BOOLEAN, "browser")
+//                    }
+//            ),
+//            new SchemaJsonObject("globals", PropertyType.OBJECT, "globals", new BaseType[]{
+//                    new BaseType(BaseType.ANY_NAME, PropertyType.BOOLEAN, "")
+//            }),
+//            new SchemaJsonObject("rules", PropertyType.OBJECT, "rules", new BaseType[]{})
+//    }
+//    );
+    public static SchemaJsonObject ROOT;
 
     private ESLintSchema() {
     }
 
     public static void buildSchema() {
-        BaseType rules = ROOT.find("rules");
+        BaseType rules = ROOT.find(RULES);
         if (rules != null) {
             List<BaseType> rulesMap = ContainerUtil.map(RuleCache.instance.rulesMap, new Function<String, BaseType>() {
                 public BaseType fun(String rule) {
@@ -66,7 +69,6 @@ public final class ESLintSchema {
     }
 
     public static SchemaJsonObject load() {
-//        String schema = "/Users/idok/Projects/eslint-plugin/src/com/eslint/config/schema.json";
 //        FileReader reader = null;
         InputStreamReader reader = null;
         try {
@@ -194,16 +196,3 @@ public final class ESLintSchema {
 
     public enum PropertyType {ANY, BOOLEAN, STRING, OBJECT, INT}
 }
-
-
-//class RootProp {
-//    public EnvProp env;
-//    public BaseType globals;
-//    public BaseType rules;
-//}
-//
-//class EnvProp {
-//    public BaseType amd;
-//    public BaseType node;
-//    public BaseType browser;
-//}

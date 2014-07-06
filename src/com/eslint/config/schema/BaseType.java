@@ -17,12 +17,7 @@ public class BaseType {
     }
 
     public boolean isValidValue(String value) {
-        switch (type) {
-            case BOOLEAN:
-                return isBoolean(value);
-            default:
-                return true;
-        }
+        return true;
     }
 
     public static boolean isBoolean(String valueStr) {
@@ -32,6 +27,11 @@ public class BaseType {
     public static class SchemaBoolean extends BaseType {
         public SchemaBoolean() {
             type = ESLintSchema.PropertyType.BOOLEAN;
+        }
+
+        @Override
+        public boolean isValidValue(String value) {
+            return isBoolean(value);
         }
     }
 

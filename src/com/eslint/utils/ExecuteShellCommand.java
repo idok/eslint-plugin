@@ -16,31 +16,17 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ExecuteShellCommand {
+public final class ExecuteShellCommand {
+
+    private ExecuteShellCommand() {
+    }
 
     private static final Logger LOG = Logger.getInstance(ESLintBundle.LOG_ID);
 
-//    String cwd = "/Users/idok/Projects/react-viewer";
-
-    public static void main(String[] args) {
-        ExecuteShellCommand obj = new ExecuteShellCommand();
-        String domainName = "google.com";
-        //in mac oxs
-//        String command = "grunt eslint";
-        String file = "packages/core/src/main/util/comp-factory.js"; ///Users/idok/Projects/react-viewer/
-        String command = "node node_modules/eslint/bin/eslint.js -c .eslintrc --rulesdir ['node_modules/grunt-packages/conf/rules'] " + file + "";
-//        String command = "pwd";
-
-        //in windows
-        //String command = "ping -n 3 " + domainName;
-//        String output = obj.executeCommand(command);
-//        System.out.println("output: " + output);
-    }
-
-    //    private static final Pattern pattern = Pattern.compile("\\d+:\\d+");
+    // private static final Pattern pattern = Pattern.compile("\\d+:\\d+");
     private static final Pattern pattern = Pattern.compile("(\\d+):(\\d+)\\s+(\\w+)\\s+([\\w\\W]+)\\s+([\\w-]+)");
 
-    public Result executeCommand(String cwd, String command) {
+    public static Result executeCommand(String cwd, String command) {
         StringBuilder output = new StringBuilder();
         StringBuilder errOutput = new StringBuilder();
 
@@ -100,11 +86,7 @@ public class ExecuteShellCommand {
     }
 
     public static Result run(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir) {
-        ExecuteShellCommand obj = new ExecuteShellCommand();
-//        String command = "grunt eslint";
-//        String file = "packages/core/src/main/util/comp-factory.js"; ///Users/idok/Projects/react-viewer/
-        // String command = "node node_modules/eslint/bin/eslint.js -c .eslintrc --rulesdir ['node_modules/grunt-packages/conf/rules'] " + path + "";
-        String command = nodeInterpreter + ' ' + eslintBin; //NodeDetectionUtil.NODE_INTERPRETER_BASE_NAME
+        String command = nodeInterpreter + ' ' + eslintBin;
         if (StringUtils.isNotEmpty(eslintrc)) {
             command += " -c " + eslintrc;
         }
@@ -112,7 +94,7 @@ public class ExecuteShellCommand {
             command += " --rulesdir ['" + rulesdir + "']";
         }
         command += ' ' + path;
-        return obj.executeCommand(cwd, command);
+        return executeCommand(cwd, command);
     }
 
     public static class Result {

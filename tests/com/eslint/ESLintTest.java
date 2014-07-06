@@ -1,6 +1,7 @@
 package com.eslint;
 
 import com.eslint.settings.Settings;
+import com.eslint.utils.ESLintCommandLineUtilTest;
 import com.intellij.codeInsight.daemon.impl.HighlightInfo;
 import com.intellij.codeInsight.daemon.impl.HighlightInfoType;
 import com.intellij.openapi.application.ApplicationManager;
@@ -43,9 +44,9 @@ public class ESLintTest extends LightPlatformCodeInsightFixtureTestCase {
     protected void doTest(final String file) {
         Project project = myFixture.getProject();
         Settings settings = Settings.getInstance(project);
-        settings.eslintExecutable = "/usr/local/bin/eslint";
+        settings.eslintExecutable = ESLintCommandLineUtilTest.ESLINT_BIN;
         settings.eslintRcFile = getTestDataPath() + "/.eslintrc";
-        settings.nodeInterpreter = "/usr/local/bin/node";
+        settings.nodeInterpreter = ESLintCommandLineUtilTest.NODE_INTERPRETER;
         settings.rulesPath = "";
         settings.pluginEnabled = true;
         myFixture.configureByFile(file);

@@ -46,7 +46,7 @@ public final class RuleCache {
     public static void initialize(Project project, String rulesPath) {
         instance = new RuleCache();
         ESLintSchema.load();
-        SchemaJsonObject rules = ESLintSchema.ROOT.findOfType("rules");
+        SchemaJsonObject rules = ESLintSchema.ROOT.findOfType(ESLintSchema.RULES);
         if (rules != null) {
             for (BaseType b : rules.properties) {
                 RuleCache.instance.rulesMap.add(b.title);

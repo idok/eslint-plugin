@@ -1,8 +1,11 @@
 package com.eslint.settings;
 
 import com.eslint.ESLintProjectComponent;
+import com.eslint.utils.ESLintCommandLineUtil;
 import com.eslint.utils.ESLintDetectionUtil;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.javascript.nodejs.NodeDetectionUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -37,6 +40,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
 //path to JavaScript: JSBundle.message("settings.javascript.root.configurable.name", new Object[0])
 public class ESLintSettingsPage implements Configurable {
     public static final String FIX_IT = "Fix it";
@@ -59,7 +64,8 @@ public class ESLintSettingsPage implements Configurable {
     private JLabel pathToEslintBinLabel;
     private JLabel nodeInterpreterLabel;
     private JCheckBox treatAllEslintIssuesCheckBox;
-    private final PackagesNotificationPanel myPackagesNotificationPanel;
+    private JLabel versionLabel;
+    private final PackagesNotificationPanel packagesNotificationPanel;
 
     public ESLintSettingsPage(@NotNull final Project project) {
         this.project = project;
@@ -85,11 +91,11 @@ public class ESLintSettingsPage implements Configurable {
             }
         });
 
-        this.myPackagesNotificationPanel = new PackagesNotificationPanel(project);
+        this.packagesNotificationPanel = new PackagesNotificationPanel(project);
 //        GridConstraints gridConstraints = new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
 //                GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW,
 //                null, new Dimension(250, 150), null);
-        errorPanel.add(this.myPackagesNotificationPanel.getComponent(), BorderLayout.CENTER);
+        errorPanel.add(this.packagesNotificationPanel.getComponent(), BorderLayout.CENTER);
 
         DocumentAdapter docAdp = new DocumentAdapter() {
             protected void textChanged(DocumentEvent e) {
@@ -148,10 +154,26 @@ public class ESLintSettingsPage implements Configurable {
             errors.add(error);
         }
         if (errors.isEmpty()) {
-            myPackagesNotificationPanel.removeAllLinkHandlers();
-            myPackagesNotificationPanel.hide();
+            packagesNotificationPanel.removeAllLinkHandlers();
+            packagesNotificationPanel.hide();
+            getVersion();
         } else {
             showErrors(errors);
+        }
+    }
+
+    private void getVersion() {
+        ESLintCommandLineUtil.ESLintSettings settings = new ESLintCommandLineUtil.ESLintSettings();
+        settings.node = nodeInterpreterField.getChildComponent().getText();
+        settings.eslintExecutablePath = eslintBinField2.getChildComponent().getText();
+        settings.cwd = project.getBasePath();
+        try {
+            ProcessOutput out = ESLintCommandLineUtil.version(settings);
+            if (out.getExitCode() == 0) {
+                versionLabel.setText(out.getStdout().trim());
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
     }
 
@@ -340,13 +362,13 @@ public class ESLintSettingsPage implements Configurable {
             String linkText = error.getLinkText();
             final JTextComponent component = error.getTextComponent();
             if (linkText != null && component != null) {
-                this.myPackagesNotificationPanel.addLinkHandler(linkText, new Runnable() {
+                this.packagesNotificationPanel.addLinkHandler(linkText, new Runnable() {
                     public void run() {
                         component.requestFocus();
                     }
                 });
             }
         }
-        this.myPackagesNotificationPanel.showError(html, null, null);
+        this.packagesNotificationPanel.showError(html, null, null);
     }
 }

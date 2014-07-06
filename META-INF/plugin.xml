@@ -16,7 +16,7 @@
     <depends>JavaScript</depends>
 
     <change-notes><![CDATA[
-       <p>1.0.10 Add annotation and completion to eslintrc</p>
+       <p>1.0.10 Add annotation and completion to eslintrc, add version to settings dialog</p>
        <p>1.0.9 Fix performance issue</p>
        <p>1.0.8 Performance improvements, bug fixes, refresh inspection status when eslintrc or config change</p>
        <p>1.0.7 Fix ClassNotFound Error</p>

@@ -5,22 +5,22 @@
                 {
                     "title": "amd",
                     "type": "BOOLEAN",
-                    "description": ""
+                    "description": "amd"
                 },
                 {
                     "title": "node",
                     "type": "BOOLEAN",
-                    "description": ""
+                    "description": "node"
                 },
                 {
                     "title": "browser",
                     "type": "BOOLEAN",
-                    "description": ""
+                    "description": "browser"
                 }
             ],
             "title": "env",
             "type": "OBJECT",
-            "description": ""
+            "description": "running environment"
         },
         {
             "properties": [
@@ -32,7 +32,7 @@
             ],
             "title": "globals",
             "type": "OBJECT",
-            "description": ""
+            "description": "globals"
         },
         {
             "properties": [
@@ -634,7 +634,7 @@
             ],
             "title": "rules",
             "type": "OBJECT",
-            "description": ""
+            "description": "rules"
         }
     ],
     "title": "root",
