@@ -16,6 +16,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class Fixes {
     private Fixes() {
     }
@@ -43,6 +46,8 @@ public final class Fixes {
     }
 
     public static BaseActionFix getFixForRule(String rule, PsiElement element) {
+//        Map<String, BaseActionFix> map = new HashMap<String, BaseActionFix>();
+//        map.put("strict", )
         if (rule.equals("strict")) {
             return new StrictActionFix(element);
         }
@@ -60,6 +65,9 @@ public final class Fixes {
         }
         if (rule.equals("no-lonely-if")) {
             return new NoLonelyIfActionFix(element);
+        }
+        if (rule.equals("dot-notation")) {
+            return new DotNotationActionFix(element);
         }
         return null;
     }
