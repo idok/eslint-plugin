@@ -33,6 +33,6 @@ public class ESLintConfigFileType extends LanguageFileType {
 
     @NotNull
     public Icon getIcon() {
-        return ESLintIcons.FileTypes.ESLint;
+        return ESLintIcons.ESLint;
     }
 }
