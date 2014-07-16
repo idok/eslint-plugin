@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.11</version>
+    <version>1.0.14</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -17,7 +17,10 @@
     <depends>JavaScript</depends>
 
     <change-notes><![CDATA[
-       <p>1.0.11 </p>
+       <p>1.0.14</p>
+       <p>1.0.13 bug fix</p>
+       <p>1.0.12 bug fix related to relative path of eslint</p>
+       <p>1.0.11 bug fixes, add quick fix to DotNotation rule</p>
        <p>1.0.10 Add annotation and completion to eslintrc, add version to settings dialog, fix eslintrc not loading bug</p>
        <p>1.0.9 Fix performance issue</p>
        <p>1.0.8 Performance improvements, bug fixes, refresh inspection status when eslintrc or config change</p>

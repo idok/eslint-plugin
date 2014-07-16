@@ -3,6 +3,7 @@ package com.eslint.utils;
 import com.eslint.ESLintBundle;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -34,6 +35,10 @@ public final class FileUtils {
     public static String makeRelative(Project project, VirtualFile absolutePath) {
         //FileUtil.getRelativePath(path, file.getPath().replace('/', File.separatorChar), File.separatorChar)
         return makeRelative(project.getBaseDir(), absolutePath);
+    }
+
+    public static String makeRelative(File project, File absolutePath) {
+        return FileUtil.getRelativePath(project, absolutePath);
     }
 
     public static boolean hasExtension(String file, String extension) {
