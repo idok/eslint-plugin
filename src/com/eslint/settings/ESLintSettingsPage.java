@@ -291,12 +291,16 @@ public class ESLintSettingsPage implements Configurable {
 
     @Override
     public boolean isModified() {
-        return !pluginEnabledCheckbox.isSelected() == getSettings().pluginEnabled
+        return pluginEnabledCheckbox.isSelected() != getSettings().pluginEnabled
                 || !eslintBinField2.getChildComponent().getText().equals(getSettings().eslintExecutable)
                 || !nodeInterpreterField.getChildComponent().getText().equals(getSettings().nodeInterpreter)
-                || !eslintrcFile.getChildComponent().getText().equals(getSettings().eslintRcFile)
                 || treatAllEslintIssuesCheckBox.isSelected() != getSettings().treatAllEslintIssuesAsWarnings
-                || !rulesPathField.getText().equals(getSettings().rulesPath);
+                || !rulesPathField.getText().equals(getSettings().rulesPath)
+                || !getESLintRCFile().equals(getSettings().eslintRcFile);
+    }
+
+    private String getESLintRCFile() {
+        return useProjectEslintrcRadioButton.isSelected() ? eslintrcFile.getChildComponent().getText() : "";
     }
 
     @Override
@@ -310,7 +314,7 @@ public class ESLintSettingsPage implements Configurable {
         settings.pluginEnabled = pluginEnabledCheckbox.isSelected();
         settings.eslintExecutable = eslintBinField2.getChildComponent().getText();
         settings.nodeInterpreter = nodeInterpreterField.getChildComponent().getText();
-        settings.eslintRcFile = useProjectEslintrcRadioButton.isSelected() ? eslintrcFile.getChildComponent().getText() : "";
+        settings.eslintRcFile = getESLintRCFile();
         settings.rulesPath = rulesPathField.getText();
         settings.treatAllEslintIssuesAsWarnings = treatAllEslintIssuesCheckBox.isSelected();
         project.getComponent(ESLintProjectComponent.class).validateSettings();
