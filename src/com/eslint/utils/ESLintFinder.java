@@ -20,6 +20,7 @@ public final class ESLintFinder {
     public static final String ESLINTRC = ".eslintrc";
     public static final String ESLINT_BASE_NAME = SystemInfo.isWindows ? "eslint.cmd" : "eslint";
     private static final Pattern NVM_NODE_DIR_NAME_PATTERN = Pattern.compile("^v?(\\d+)\\.(\\d+)\\.(\\d+)$");
+    public static final String NODE_MODULES = "node_modules";
 
     private ESLintFinder() {
     }
@@ -50,13 +51,25 @@ public final class ESLintFinder {
     public static List<File> searchForESLintBin(File projectRoot) {
 //        List<File> nodeModules = searchProjectNodeModules(projectRoot);
         List<File> globalESLintBin = listAllPossibleNodeInterpreters();
-        String path = buildPath("node_modules", "eslint", "bin", "eslint.js");
-        File file = new File(projectRoot, path);
-        if (file.exists()) {
-            globalESLintBin.add(file);
+
+        if (SystemInfo.isWindows) {
+            File file = resolvePath(projectRoot, NODE_MODULES, ".bin", "eslint.cmd");
+            if (file.exists()) {
+                globalESLintBin.add(file);
+            }
+        } else {
+            File file = resolvePath(projectRoot, NODE_MODULES, "eslint", "bin", "eslint.js");
+            if (file.exists()) {
+                globalESLintBin.add(file);
+            }
         }
 //        globalESLintBin.addAll(nodeModules);
         return globalESLintBin;
+    }
+
+    public static File resolvePath(File root, @Nullable String first, @Nullable String second, String... rest) {
+        String path = buildPath(first, second, rest);
+        return new File(root, path);
     }
 
     public static String buildPath(@Nullable String first, @Nullable String second, String... rest) {
