@@ -1,8 +1,9 @@
 package com.eslint.settings;
 
 import com.eslint.ESLintProjectComponent;
-import com.eslint.utils.ESLintCommandLineUtil;
-import com.eslint.utils.ESLintDetectionUtil;
+import com.eslint.utils.ESLintFinder;
+import com.eslint.utils.ESLintRunner;
+import com.eslint.utils.FileUtils;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessOutput;
@@ -162,13 +163,21 @@ public class ESLintSettingsPage implements Configurable {
         }
     }
 
+    private ESLintRunner.ESLintSettings settings;
+
     private void getVersion() {
-        ESLintCommandLineUtil.ESLintSettings settings = new ESLintCommandLineUtil.ESLintSettings();
+        if (settings != null && settings.node.equals(nodeInterpreterField.getChildComponent().getText())
+                && settings.eslintExecutablePath.equals(eslintBinField2.getChildComponent().getText())
+                && settings.cwd.equals(project.getBasePath())
+                ) {
+            return;
+        }
+        settings = new ESLintRunner.ESLintSettings();
         settings.node = nodeInterpreterField.getChildComponent().getText();
         settings.eslintExecutablePath = eslintBinField2.getChildComponent().getText();
         settings.cwd = project.getBasePath();
         try {
-            ProcessOutput out = ESLintCommandLineUtil.version(settings);
+            ProcessOutput out = ESLintRunner.version(settings);
             if (out.getExitCode() == 0) {
                 versionLabel.setText(out.getStdout().trim());
             }
@@ -222,12 +231,8 @@ public class ESLintSettingsPage implements Configurable {
             @NotNull
             public List<String> produce() {
                 File projectRoot = new File(project.getBaseDir().getPath());
-                List<File> newFiles = ESLintDetectionUtil.searchForESLintBin(projectRoot);
-                return ContainerUtil.map(newFiles, new Function<File, String>() {
-                    public String fun(File file) {
-                        return file.getAbsolutePath();
-                    }
-                });
+                List<File> newFiles = ESLintFinder.searchForESLintBin(projectRoot);
+                return FileUtils.toAbsolutePath(newFiles);
             }
         });
 
@@ -243,7 +248,7 @@ public class ESLintSettingsPage implements Configurable {
             @NotNull
             public List<String> produce() {
                 File projectRoot = new File(project.getBaseDir().getPath());
-                return ESLintDetectionUtil.searchForESLintRCFiles(projectRoot);
+                return ESLintFinder.searchForESLintRCFiles(projectRoot);
             }
         });
 
@@ -259,11 +264,7 @@ public class ESLintSettingsPage implements Configurable {
             @NotNull
             public List<String> produce() {
                 List<File> newFiles = NodeDetectionUtil.listAllPossibleNodeInterpreters();
-                return ContainerUtil.map(newFiles, new Function<File, String>() {
-                    public String fun(File file) {
-                        return file.getAbsolutePath();
-                    }
-                });
+                return FileUtils.toAbsolutePath(newFiles);
             }
         });
 

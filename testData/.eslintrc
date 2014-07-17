@@ -45,7 +45,7 @@
         "no-unused-vars": [0, {"vars": "local", "args": "after-used"}],
         "no-warning-comments": [0, { "terms": ["todo", "fixme", "xxx"], "location": "start" }],
         "no-wrap-func": 2,
-        "no-yoda": 2,
+        "yoda": 2,
 
         "block-scoped-var": 0,
         "brace-style": [0, "1tbs"],
@@ -105,9 +105,8 @@
         "no-self-compare": 1,
         "no-use-before-define": 0,
         "valid-jsdoc": 0,
+        "eol-last": 0,
 
-
-        "smarter-eqeqeq": 0,
         "camelcase": 0,
         "dot-notation": 1,
         "eqeqeq": 1,

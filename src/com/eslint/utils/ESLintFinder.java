@@ -5,6 +5,7 @@ import com.intellij.execution.configurations.PathEnvironmentVariableUtil;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EnvironmentUtil;
+import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,12 +16,12 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class ESLintDetectionUtil {
+public final class ESLintFinder {
     public static final String ESLINTRC = ".eslintrc";
     public static final String ESLINT_BASE_NAME = SystemInfo.isWindows ? "eslint.cmd" : "eslint";
     private static final Pattern NVM_NODE_DIR_NAME_PATTERN = Pattern.compile("^v?(\\d+)\\.(\\d+)\\.(\\d+)$");
 
-    private ESLintDetectionUtil() {
+    private ESLintFinder() {
     }
 
     // List infos = ContainerUtil.newArrayList();
@@ -85,7 +86,7 @@ public final class ESLintDetectionUtil {
         }
         File[] dirs = parentDir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return ESLintDetectionUtil.structureNodeVersionStr(name) != null;
+                return ESLintFinder.structureNodeVersionStr(name) != null;
             }
         });
         if (dirs == null || dirs.length == 0) {
@@ -93,8 +94,8 @@ public final class ESLintDetectionUtil {
         }
         Arrays.sort(dirs, new Comparator<File>() {
             public int compare(File dir1, File dir2) {
-                int[] v1 = ESLintDetectionUtil.structureNodeVersionStr(dir1.getName());
-                int[] v2 = ESLintDetectionUtil.structureNodeVersionStr(dir2.getName());
+                int[] v1 = ESLintFinder.structureNodeVersionStr(dir1.getName());
+                int[] v2 = ESLintFinder.structureNodeVersionStr(dir2.getName());
                 if (v1 != null && v2 != null) {
                     for (int i = 0; i < v1.length; i++) {
                         if (i < v2.length) {
@@ -130,7 +131,12 @@ public final class ESLintDetectionUtil {
         return null;
     }
 
-    public static List<String> searchForESLintRCFiles(File projectRoot) {
+    /**
+     * find possible eslint rc files
+     * @param projectRoot
+     * @return
+     */
+    public static List<String> searchForESLintRCFiles(final File projectRoot) {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File file, String name) {
@@ -138,7 +144,12 @@ public final class ESLintDetectionUtil {
             }
         };
         // return Arrays.asList(files);
-        return FileUtils.displayDirectoryContents(projectRoot, projectRoot, filter);
+        List<String> files = FileUtils.recursiveVisitor(projectRoot, filter);
+        return ContainerUtil.map(files, new Function<String, String>() {
+            public String fun(String curFile) {
+                return FileUtils.makeRelative(projectRoot, new File(curFile));
+            }
+        });
     }
 
 

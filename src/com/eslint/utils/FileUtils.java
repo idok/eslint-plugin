@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,6 +36,14 @@ public final class FileUtils {
     public static String makeRelative(Project project, VirtualFile absolutePath) {
         //FileUtil.getRelativePath(path, file.getPath().replace('/', File.separatorChar), File.separatorChar)
         return makeRelative(project.getBaseDir(), absolutePath);
+    }
+
+    public static String getExtensionWithDot(VirtualFile file){
+        String ext = StringUtil.notNullize(file.getExtension());
+        if (!ext.startsWith(".")) {
+            ext = '.' + ext;
+        }
+        return ext;
     }
 
     public static String makeRelative(File project, File absolutePath) {
@@ -95,12 +104,39 @@ public final class FileUtils {
     }
 
     @NotNull
+    public static List<String> recursiveVisitor(@NotNull File dir, @NotNull FilenameFilter filter) {
+//        String[] ret = dir.list(filter);
+        List<String> retList = new ArrayList<String>();
+//        Collections.addAll(retList, ret);
+        File[] files = dir.listFiles();
+        for (final File file : files) {
+            if (file.isDirectory()) {
+                retList.addAll(recursiveVisitor(file, filter));
+            } else {
+                if (filter.accept(file.getParentFile(), file.getName())){
+                    retList.add(file.getAbsolutePath());
+                }
+            }
+        }
+        return retList;
+    }
+
+    public static List<String> toAbsolutePath(List<File> newFiles) {
+        return ContainerUtil.map(newFiles, new Function<File, String>() {
+            public String fun(File file) {
+                return file.getAbsolutePath();
+            }
+        });
+    }
+
+    @NotNull
     public static List<String> listFiles(@NotNull final File projectRoot, @NotNull final File dir, @NotNull FilenameFilter filter) {
         String[] curFiles = dir.list(filter);
         //        allFiles.addAll(ret); //Arrays.asList(curFiles));
         return ContainerUtil.map(curFiles, new Function<String, String>() {
             public String fun(String curFile) {
                 // TODO replace with makeRelative
+//                return makeRelative();
                 return new File(dir, curFile).getAbsolutePath().substring(projectRoot.getAbsolutePath().length() + 1);
             }
         });
@@ -139,6 +175,14 @@ public final class FileUtils {
         return result;
     }
 
+    /**
+     *
+     * @param project containing project
+     * @param path path to path to file / folder
+     * @param allowEmpty allow empty path
+     * @param isFile should be file or folder
+     * @return validation status
+     */
     public static ValidationStatus validateProjectPath(Project project, String path, boolean allowEmpty, boolean isFile) {
         if (StringUtils.isEmpty(path)) {
             return allowEmpty ? ValidationStatus.VALID : ValidationStatus.IS_EMPTY;

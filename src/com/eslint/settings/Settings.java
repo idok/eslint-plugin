@@ -1,6 +1,6 @@
 package com.eslint.settings;
 
-import com.eslint.utils.ESLintDetectionUtil;
+import com.eslint.utils.ESLintFinder;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
                 @Storage(id = "default", file = StoragePathMacros.PROJECT_FILE),
                 @Storage(id = "dir", file = StoragePathMacros.PROJECT_CONFIG_DIR + "/eslintPlugin.xml", scheme = StorageScheme.DIRECTORY_BASED)})
 public class Settings implements PersistentStateComponent<Settings> {
-    public static final String DEFAULT_ESLINT_RC = ESLintDetectionUtil.ESLINTRC;
+    public static final String DEFAULT_ESLINT_RC = ESLintFinder.ESLINTRC;
     public static final String DEFAULT_RULES_DIR = "";
     public static final String DEFAULT_ESLINT_EXE = "node_modules/eslint/bin/eslint.js";
     public static final Boolean DEFAULT_PLUGIN_ENABLED = false;

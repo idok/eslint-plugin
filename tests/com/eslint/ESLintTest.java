@@ -1,29 +1,9 @@
 package com.eslint;
 
 import com.eslint.settings.Settings;
-import com.eslint.utils.ESLintCommandLineUtilTest;
-import com.intellij.codeInsight.daemon.impl.HighlightInfo;
-import com.intellij.codeInsight.daemon.impl.HighlightInfoType;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.PathManager;
-import com.intellij.openapi.application.PluginPathManager;
-import com.intellij.openapi.module.Module;
+import com.eslint.utils.ESLintRunnerTest;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentEntry;
-import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.css.impl.VirtualFileUtil;
-import com.intellij.testFramework.PsiTestUtil;
 import com.intellij.testFramework.fixtures.*;
-import com.intellij.testFramework.fixtures.impl.LightTempDirTestFixtureImpl;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ESLintTest extends LightPlatformCodeInsightFixtureTestCase {
     @Override
@@ -44,9 +24,9 @@ public class ESLintTest extends LightPlatformCodeInsightFixtureTestCase {
     protected void doTest(final String file) {
         Project project = myFixture.getProject();
         Settings settings = Settings.getInstance(project);
-        settings.eslintExecutable = ESLintCommandLineUtilTest.ESLINT_BIN;
+        settings.eslintExecutable = ESLintRunnerTest.ESLINT_BIN;
         settings.eslintRcFile = getTestDataPath() + "/.eslintrc";
-        settings.nodeInterpreter = ESLintCommandLineUtilTest.NODE_INTERPRETER;
+        settings.nodeInterpreter = ESLintRunnerTest.NODE_INTERPRETER;
         settings.rulesPath = "";
         settings.pluginEnabled = true;
         myFixture.configureByFile(file);
