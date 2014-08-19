@@ -1,7 +1,7 @@
-<idea-plugin version="2">
+<idea-plugin version="2" url="https://github.com/idok/eslint-plugin">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.17</version>
+    <version>1.0.19</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -12,12 +12,10 @@
       <p>Support for eslint config annotation and completion</p>
     ]]></description>
 
-    <depends>com.intellij.modules.lang</depends>
-    <!--<depends>com.intellij.modules.platform</depends>-->
-    <depends>JavaScript</depends>
-
     <change-notes><![CDATA[
-       <p>1.0.17s</p>
+       <p>1.0.19 Fix windows execution and solve version compatibility issue, thanks <a href="https://github.com/eric-isakson"/>eric-isakson<a/></p>
+       <p>1.0.18 fix plugin url</p>
+       <p>1.0.17 fix default eslint bin</p>
        <p>1.0.16 fix issue finding eslint bin in windows</p>
        <p>1.0.15 fix lag in settings dialog, fix windows issue with running lint</p>
        <p>1.0.14 fix eslintrc configuration in settings</p>
@@ -30,8 +28,11 @@
        <p>1.0.7 Fix ClassNotFound Error</p>
        <p>1.0.6 Add configuration options for node interpreter and eslintrc search, bug fixes</p>
        <p>1.0.1 First version.</p>
-    ]]>
-    </change-notes>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.lang</depends>
+    <!--<depends>com.intellij.modules.platform</depends>-->
+    <depends>JavaScript</depends>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="131"/>
