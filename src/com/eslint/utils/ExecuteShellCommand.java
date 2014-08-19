@@ -6,6 +6,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.SystemInfo;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -138,15 +139,19 @@ public final class ExecuteShellCommand {
     }
 
     public static Result run(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir) {
-        String command = nodeInterpreter + ' ' + eslintBin;
+        StringBuilder command = new StringBuilder();
+        if (SystemInfo.isWindows) {
+            command.append("cmd.exe /C ");
+        }
+        command.append(nodeInterpreter).append(' ').append(eslintBin);
         if (StringUtils.isNotEmpty(eslintrc)) {
-            command += " -c " + eslintrc;
+            command.append(" -c ").append(eslintrc);
         }
         if (StringUtils.isNotEmpty(rulesdir)) {
-            command += " --rulesdir ['" + rulesdir + "']";
+            command.append(" --rulesdir ['").append(rulesdir).append("']");
         }
-        command += ' ' + path;
-        return executeCommand(cwd, command);
+        command.append(' ').append(path);
+        return executeCommand(cwd, command.toString());
     }
 
     public static class Result {
