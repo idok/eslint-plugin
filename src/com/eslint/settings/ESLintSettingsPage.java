@@ -155,7 +155,11 @@ public class ESLintSettingsPage implements Configurable {
             errors.add(error);
         }
         if (errors.isEmpty()) {
-            //packagesNotificationPanel.removeAllLinkHandlers();
+            try {
+                packagesNotificationPanel.removeAllLinkHandlers();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             packagesNotificationPanel.hide();
             getVersion();
         } else {
