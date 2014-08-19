@@ -1,15 +1,14 @@
 package com.eslint.fixes;
 
 import com.eslint.ESLintBundle;
+import com.eslint.utils.JSBinaryExpressionUtil;
 import com.intellij.codeInspection.LocalQuickFix;
 import com.intellij.codeInspection.ProblemDescriptor;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.javascript.psi.*;
-import com.intellij.lang.javascript.psi.impl.JSBinaryExpressionImpl;
 import com.intellij.lang.javascript.psi.impl.JSChangeUtil;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
@@ -191,14 +190,8 @@ public final class Fixes {
 
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
             PsiElement element = descriptor.getPsiElement();
-//            PsiElement parent = element == null ? null : element.getParent();
-            PsiElement binary = PsiTreeUtil.findFirstParent(element, new Condition<PsiElement>() {
-                @Override
-                public boolean value(PsiElement psiElement) {
-                    return psiElement instanceof JSBinaryExpression;
-                }
-            });
-            ASTNode op = ((JSBinaryExpressionImpl) binary).getOperator();
+            ASTNode op = JSBinaryExpressionUtil.getOperator(element);
+
             Document document = PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
 
             String replace = "";
