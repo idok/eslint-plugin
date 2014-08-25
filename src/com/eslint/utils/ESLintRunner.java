@@ -1,9 +1,11 @@
 package com.eslint.utils;
 
+import com.eslint.ESLintProjectComponent;
 import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
@@ -47,11 +49,33 @@ public final class ESLintRunner {
         return execute(commandLine, TIME_OUT);
     }
 
+    public static Result lint(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir) {
+        ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(cwd, path, nodeInterpreter, eslintBin, eslintrc, rulesdir);
+        try {
+            ProcessOutput output = ESLintRunner.lint(settings);
+            return Result.processResults(output);
+        } catch (ExecutionException e) {
+            LOG.warn("Could not lint file", e);
+            ESLintProjectComponent.showNotification("Error running ESLint inspection: " + e.getMessage() + "\ncwd: " + cwd + "\ncommand: " + eslintBin, NotificationType.WARNING);
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @NotNull
     public static ProcessOutput version(@NotNull ESLintSettings settings) throws ExecutionException {
         GeneralCommandLine commandLine = createCommandLine(settings);
         commandLine.addParameter("-v");
         return execute(commandLine, TIME_OUT);
+    }
+
+    @NotNull
+    public static String runVersion(@NotNull ESLintSettings settings) throws ExecutionException {
+        ProcessOutput out = version(settings);
+        if (out.getExitCode() == 0) {
+            return out.getStdout().trim();
+        }
+        return "";
     }
 
     @NotNull

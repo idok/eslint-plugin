@@ -1,11 +1,11 @@
 package com.eslint.config.schema;
 
-import com.eslint.utils.FileUtils;
 import com.google.common.io.Files;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.wix.utils.FileUtils;
 
 import java.io.File;
 import java.io.FilenameFilter;

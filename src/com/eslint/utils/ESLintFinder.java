@@ -7,6 +7,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EnvironmentUtil;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
+import com.wix.utils.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +22,7 @@ public final class ESLintFinder {
     public static final String ESLINT_BASE_NAME = SystemInfo.isWindows ? "eslint.cmd" : "eslint";
     private static final Pattern NVM_NODE_DIR_NAME_PATTERN = Pattern.compile("^v?(\\d+)\\.(\\d+)\\.(\\d+)$");
     public static final String NODE_MODULES = "node_modules";
+    public static final String DEFAULT_ESLINT_BIN = SystemInfo.isWindows ? "node_modules\\.bin\\eslint.cmd" : "node_modules/eslint/bin/eslint.js";
 
     private ESLintFinder() {
     }

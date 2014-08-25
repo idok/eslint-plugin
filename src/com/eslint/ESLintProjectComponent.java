@@ -1,8 +1,6 @@
 package com.eslint;
 
 import com.eslint.settings.Settings;
-import com.eslint.utils.FileUtils;
-import com.eslint.utils.FileUtils.ValidationStatus;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
@@ -10,6 +8,8 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.wix.utils.FileUtils;
+import com.wix.utils.FileUtils.ValidationStatus;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
@@ -117,7 +117,7 @@ public class ESLintProjectComponent implements ProjectComponent {
     }
 
     private boolean validateField(String fieldName, String value, boolean shouldBeAbsolute, boolean allowEmpty, boolean isFile) {
-        FileUtils.ValidationStatus r = FileUtils.validateProjectPath(shouldBeAbsolute ? null : project, value, allowEmpty, isFile);
+        ValidationStatus r = FileUtils.validateProjectPath(shouldBeAbsolute ? null : project, value, allowEmpty, isFile);
         if (isFile) {
             if (r == ValidationStatus.NOT_A_FILE) {
                 String msg = ESLintBundle.message("eslint.file.is.not.a.file", fieldName, value);

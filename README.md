@@ -41,3 +41,7 @@ Inspection:<br/>
 
 Analyze Code:<br/>
 ![ESLint inline](https://raw.githubusercontent.com/idok/eslint-plugin/master/doc/inspect.png)
+
+### A Note to contributors ###
+ESLint plugin uses the code from [here](https://github.com/idok/scss-lint-plugin/tree/master/intellij-common) as a module, to run the project you need to clone that project as well.
+

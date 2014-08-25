@@ -3,7 +3,6 @@ package com.eslint.settings;
 import com.eslint.ESLintProjectComponent;
 import com.eslint.utils.ESLintFinder;
 import com.eslint.utils.ESLintRunner;
-import com.eslint.utils.FileUtils;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessOutput;
@@ -26,6 +25,7 @@ import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.webcore.packaging.PackagesNotificationPanel;
 import com.intellij.webcore.ui.SwingHelper;
+import com.wix.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -41,9 +41,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-
-//path to JavaScript: JSBundle.message("settings.javascript.root.configurable.name", new Object[0])
 public class ESLintSettingsPage implements Configurable {
     public static final String FIX_IT = "Fix it";
     public static final String HOW_TO_USE_ESLINT = "How to Use ESLint";
@@ -170,9 +167,10 @@ public class ESLintSettingsPage implements Configurable {
     private ESLintRunner.ESLintSettings settings;
 
     private void getVersion() {
-        if (settings != null && settings.node.equals(nodeInterpreterField.getChildComponent().getText())
-                && settings.eslintExecutablePath.equals(eslintBinField2.getChildComponent().getText())
-                && settings.cwd.equals(project.getBasePath())
+        if (settings != null &&
+            settings.node.equals(nodeInterpreterField.getChildComponent().getText()) &&
+            settings.eslintExecutablePath.equals(eslintBinField2.getChildComponent().getText()) &&
+            settings.cwd.equals(project.getBasePath())
                 ) {
             return;
         }
@@ -296,12 +294,12 @@ public class ESLintSettingsPage implements Configurable {
 
     @Override
     public boolean isModified() {
-        return pluginEnabledCheckbox.isSelected() != getSettings().pluginEnabled
-                || !eslintBinField2.getChildComponent().getText().equals(getSettings().eslintExecutable)
-                || !nodeInterpreterField.getChildComponent().getText().equals(getSettings().nodeInterpreter)
-                || treatAllEslintIssuesCheckBox.isSelected() != getSettings().treatAllEslintIssuesAsWarnings
-                || !rulesPathField.getText().equals(getSettings().rulesPath)
-                || !getESLintRCFile().equals(getSettings().eslintRcFile);
+        return pluginEnabledCheckbox.isSelected() != getSettings().pluginEnabled ||
+                !eslintBinField2.getChildComponent().getText().equals(getSettings().eslintExecutable) ||
+                !nodeInterpreterField.getChildComponent().getText().equals(getSettings().nodeInterpreter) ||
+                treatAllEslintIssuesCheckBox.isSelected() != getSettings().treatAllEslintIssuesAsWarnings ||
+                !rulesPathField.getText().equals(getSettings().rulesPath) ||
+                !getESLintRCFile().equals(getSettings().eslintRcFile);
     }
 
     private String getESLintRCFile() {
