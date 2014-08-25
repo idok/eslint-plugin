@@ -53,13 +53,13 @@
                          implementationClass="com.eslint.ESLintInspection"
                          displayName="ESLint" groupKey="eslint.inspection.group.name"/>
         <!--unfair="true" runForWholeFile="true" level="WARNING" -->
-        <externalAnnotator language="JavaScript" implementationClass="com.eslint.ESLintExternalAnnotator" />
+        <!--<externalAnnotator language="JavaScript" implementationClass="com.eslint.ESLintExternalAnnotator" />-->
 
         <!-- annotate .eslintrc -->
         <projectService serviceImplementation="com.eslint.config.ESLintConfigFileChangeTracker"/>
         <fileTypeFactory implementation="com.eslint.config.ESLintConfigFileTypeFactory"/>
-        <completion.contributor order="first" language="JavaScript" implementationClass="com.eslint.config.ESLintConfigCompletionContributor"/>
-        <annotator language="JSON" implementationClass="com.eslint.config.ESLintConfigFileAnnotator"/>
+        <!--<completion.contributor order="first" language="JavaScript" implementationClass="com.eslint.config.ESLintConfigCompletionContributor"/>-->
+        <!--<annotator language="JSON" implementationClass="com.eslint.config.ESLintConfigFileAnnotator"/>-->
 
         <!--<lang.documentationProvider language="JSON" implementationClass="com.eslint.config.ESLintConfigDocumentationProvider"/>-->
         <!--<psi.referenceContributor language="JSON" implementation="com.eslint.config.ESLintConfigReferenceContributor"/>-->
