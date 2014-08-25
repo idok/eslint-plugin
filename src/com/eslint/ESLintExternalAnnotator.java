@@ -40,12 +40,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * @author idok
  */
-public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintAnnotationInput, ESLintAnnotationResult> {
+public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnnotator.ESLintAnnotationInput, ESLintExternalAnnotator.ESLintAnnotationResult> {
 
     public static final ESLintExternalAnnotator INSTANCE = new ESLintExternalAnnotator();
     private static final Logger LOG = Logger.getInstance(ESLintBundle.LOG_ID);
@@ -220,28 +219,28 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintAnnotationI
         }
         return null;
     }
-}
 
-class ESLintAnnotationInput {
-    public final String fileContent;
-    public final EditorColorsScheme colorsScheme;
-    public final Project project;
-    public final PsiFile psiFile;
+    static class ESLintAnnotationInput {
+        public final String fileContent;
+        public final EditorColorsScheme colorsScheme;
+        public final Project project;
+        public final PsiFile psiFile;
 
-    public ESLintAnnotationInput(Project project, PsiFile psiFile, String fileContent, EditorColorsScheme colorsScheme) {
-        this.project = project;
-        this.psiFile = psiFile;
-        this.fileContent = fileContent;
-        this.colorsScheme = colorsScheme;
-    }
-}
-
-class ESLintAnnotationResult {
-    public ESLintAnnotationResult(ESLintAnnotationInput input, Result result) {
-        this.input = input;
-        this.result = result;
+        public ESLintAnnotationInput(Project project, PsiFile psiFile, String fileContent, EditorColorsScheme colorsScheme) {
+            this.project = project;
+            this.psiFile = psiFile;
+            this.fileContent = fileContent;
+            this.colorsScheme = colorsScheme;
+        }
     }
 
-    public final ESLintAnnotationInput input;
-    public final Result result;
+    static class ESLintAnnotationResult {
+        public ESLintAnnotationResult(ESLintAnnotationInput input, Result result) {
+            this.input = input;
+            this.result = result;
+        }
+
+        public final ESLintAnnotationInput input;
+        public final Result result;
+    }
 }
