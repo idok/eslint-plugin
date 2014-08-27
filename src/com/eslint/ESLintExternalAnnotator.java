@@ -1,6 +1,6 @@
 package com.eslint;
 
-import com.eslint.config.ESLintConfigFileChangeTracker;
+import com.eslint.config.ESLintConfigFileListener;
 import com.eslint.fixes.BaseActionFix;
 import com.eslint.fixes.Fixes;
 import com.eslint.fixes.SuppressActionFix;
@@ -33,6 +33,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.wix.ActualFile;
 import com.wix.ThreadLocalActualFile;
+import com.wix.annotator.ExternalLintAnnotationInput;
+import com.wix.annotator.ExternalLintAnnotationResult;
 import com.wix.utils.FileUtils;
 import com.wix.utils.PsiUtil;
 import org.apache.commons.lang.StringUtils;
@@ -44,7 +46,7 @@ import java.io.File;
 /**
  * @author idok
  */
-public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnnotator.ESLintAnnotationInput, ESLintExternalAnnotator.ESLintAnnotationResult> {
+public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnotationInput, ExternalLintAnnotationResult<Result>> {
 
     public static final ESLintExternalAnnotator INSTANCE = new ESLintExternalAnnotator();
     private static final Logger LOG = Logger.getInstance(ESLintBundle.LOG_ID);
@@ -54,13 +56,13 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
 
     @Nullable
     @Override
-    public ESLintAnnotationInput collectInformation(@NotNull PsiFile file) {
+    public ExternalLintAnnotationInput collectInformation(@NotNull PsiFile file) {
         return collectInformation(file, null);
     }
 
     @Nullable
     @Override
-    public ESLintAnnotationInput collectInformation(@NotNull PsiFile file, @NotNull Editor editor, boolean hasErrors) {
+    public ExternalLintAnnotationInput collectInformation(@NotNull PsiFile file, @NotNull Editor editor, boolean hasErrors) {
         return collectInformation(file, editor);
     }
 
@@ -75,7 +77,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
     }
 
     @Override
-    public void apply(@NotNull PsiFile file, ESLintAnnotationResult annotationResult, @NotNull AnnotationHolder holder) {
+    public void apply(@NotNull PsiFile file, ExternalLintAnnotationResult<Result> annotationResult, @NotNull AnnotationHolder holder) {
         if (annotationResult == null) {
             return;
         }
@@ -149,7 +151,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
     }
 
     @Nullable
-    private static ESLintAnnotationInput collectInformation(@NotNull PsiFile psiFile, @Nullable Editor editor) {
+    private static ExternalLintAnnotationInput collectInformation(@NotNull PsiFile psiFile, @Nullable Editor editor) {
         if (psiFile.getContext() != null || !isJavaScriptFile(psiFile)) {
             return null;
         }
@@ -174,7 +176,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
             return null;
         }
         EditorColorsScheme colorsScheme = editor != null ? editor.getColorsScheme() : null;
-        return new ESLintAnnotationInput(project, psiFile, fileContent, colorsScheme);
+        return new ExternalLintAnnotationInput(project, psiFile, fileContent, colorsScheme);
     }
 
     private static boolean isJavaScriptFile(PsiFile file) {
@@ -183,7 +185,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
 
     @Nullable
     @Override
-    public ESLintAnnotationResult doAnnotate(ESLintAnnotationInput collectedInfo) {
+    public ExternalLintAnnotationResult<Result> doAnnotate(ExternalLintAnnotationInput collectedInfo) {
         try {
             PsiFile file = collectedInfo.psiFile;
             if (!isJavaScriptFile(file)) return null;
@@ -192,14 +194,14 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
                 return null;
             }
 
-            ESLintConfigFileChangeTracker.getInstance(collectedInfo.project).startIfNeeded();
+            ESLintConfigFileListener.start(collectedInfo.project);
             String relativeFile;
             ActualFile actualCodeFile = ActualFile.getOrCreateActualFile(ESLINT_TEMP_FILE_KEY, file.getVirtualFile(), collectedInfo.fileContent);
             if (actualCodeFile == null || actualCodeFile.getFile() == null) {
                 return null;
             }
             relativeFile = FileUtils.makeRelative(new File(file.getProject().getBasePath()), actualCodeFile.getFile());
-            Result result = ESLintRunner.lint(file.getProject().getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.rulesPath);
+            Result result = ESLintRunner.lint(file.getProject().getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath);
 
             actualCodeFile.deleteTemp();
             if (StringUtils.isNotEmpty(result.errorOutput)) {
@@ -212,7 +214,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
                 LOG.error("Could not get document for file " + file.getName());
                 return null;
             }
-            return new ESLintAnnotationResult(collectedInfo, result);
+            return new ExternalLintAnnotationResult<Result>(collectedInfo, result);
         } catch (Exception e) {
             LOG.error("Error running ESLint inspection: ", e);
             ESLintProjectComponent.showNotification("Error running ESLint inspection: " + e.getMessage(), NotificationType.ERROR);
@@ -220,27 +222,13 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ESLintExternalAnn
         return null;
     }
 
-    static class ESLintAnnotationInput {
-        public final String fileContent;
-        public final EditorColorsScheme colorsScheme;
-        public final Project project;
-        public final PsiFile psiFile;
-
-        public ESLintAnnotationInput(Project project, PsiFile psiFile, String fileContent, EditorColorsScheme colorsScheme) {
-            this.project = project;
-            this.psiFile = psiFile;
-            this.fileContent = fileContent;
-            this.colorsScheme = colorsScheme;
-        }
-    }
-
-    static class ESLintAnnotationResult {
-        public ESLintAnnotationResult(ESLintAnnotationInput input, Result result) {
-            this.input = input;
-            this.result = result;
-        }
-
-        public final ESLintAnnotationInput input;
-        public final Result result;
-    }
+//    static class ESLintAnnotationResult {
+//        public ESLintAnnotationResult(ExternalLintAnnotationInput input, Result result) {
+//            this.input = input;
+//            this.result = result;
+//        }
+//
+//        public final ExternalLintAnnotationInput input;
+//        public final Result result;
+//    }
 }

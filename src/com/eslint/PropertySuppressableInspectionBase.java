@@ -5,6 +5,7 @@ import com.intellij.codeInspection.CustomSuppressableInspectionTool;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.SuppressIntentionAction;
 import com.intellij.lang.javascript.psi.JSElement;
+import com.intellij.lang.javascript.psi.JSFile;
 import com.intellij.lang.javascript.psi.impl.JSFileImpl;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -133,7 +134,7 @@ public abstract class PropertySuppressableInspectionBase extends LocalInspection
         }
 
         public boolean isAvailable(@NotNull final Project project, final Editor editor, @NotNull final PsiElement element) {
-            return element.isValid() && element.getContainingFile() instanceof JSFileImpl;
+            return element.isValid() && element.getContainingFile() instanceof JSFile;
         }
 
         public void invoke(@NotNull final Project project, final Editor editor, @NotNull final PsiElement element) throws IncorrectOperationException {

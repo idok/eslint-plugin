@@ -1,5 +1,6 @@
 package com.eslint;
 
+import com.eslint.config.schema.RuleCache;
 import com.eslint.settings.Settings;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationListener;
@@ -25,6 +26,7 @@ public class ESLintProjectComponent implements ProjectComponent {
     private static final Logger LOG = Logger.getInstance(ESLintBundle.LOG_ID);
 
     public String eslintRcFile;
+    public String customRulesPath;
     public String rulesPath;
     public String eslintExecutable;
     public String nodeInterpreter;
@@ -95,6 +97,10 @@ public class ESLintProjectComponent implements ProjectComponent {
         if (!status) {
             return false;
         }
+        status = validateField("Builtin rules", settings.builtinRulesPath, false, true, false);
+        if (!status) {
+            return false;
+        }
 
 //        if (StringUtil.isNotEmpty(settings.eslintExecutable)) {
 //            File file = new File(project.getBasePath(), settings.eslintExecutable);
@@ -107,10 +113,13 @@ public class ESLintProjectComponent implements ProjectComponent {
 //        }
         eslintExecutable = settings.eslintExecutable;
         eslintRcFile = settings.eslintRcFile;
-        rulesPath = settings.rulesPath;
+        customRulesPath = settings.rulesPath;
+        rulesPath = settings.builtinRulesPath;
         nodeInterpreter = settings.nodeInterpreter;
         treatAsWarnings = settings.treatAllEslintIssuesAsWarnings;
         pluginEnabled = settings.pluginEnabled;
+
+        RuleCache.initializeFromPath(project, this);
 
         settingValidStatus = true;
         return true;

@@ -10,7 +10,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class ESLintConfigFileType extends LanguageFileType {
     public static final ESLintConfigFileType INSTANCE = new ESLintConfigFileType();
-    public static final String ESLINTRC = "eslintrc";
+    public static final String ESLINTRC_EXT = "eslintrc";
+    public static final String ESLINTRC = '.' + ESLINTRC_EXT;
 
     private ESLintConfigFileType() {
         super(JSONLanguageDialect.JSON);
@@ -28,7 +29,7 @@ public class ESLintConfigFileType extends LanguageFileType {
 
     @NotNull
     public String getDefaultExtension() {
-        return ESLINTRC;
+        return ESLINTRC_EXT;
     }
 
     @NotNull

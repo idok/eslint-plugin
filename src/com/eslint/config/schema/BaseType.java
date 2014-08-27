@@ -36,6 +36,10 @@ public class BaseType {
     }
 
     public static class SchemaAny extends BaseType {
+        public SchemaAny(String title, String description) {
+            super(title, ESLintSchema.PropertyType.ANY, description);
+        }
+
         public SchemaAny() {
             type = ESLintSchema.PropertyType.ANY;
         }

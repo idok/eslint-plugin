@@ -5,7 +5,6 @@ import com.eslint.utils.ESLintFinder;
 import com.eslint.utils.ESLintRunner;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.process.ProcessOutput;
 import com.intellij.javascript.nodejs.NodeDetectionUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -48,7 +47,7 @@ public class ESLintSettingsPage implements Configurable {
     protected Project project;
 
     private JCheckBox pluginEnabledCheckbox;
-    private JTextField rulesPathField;
+    private JTextField customRulesPathField;
     private JPanel panel;
     private JPanel errorPanel;
     private TextFieldWithHistoryWithBrowseButton eslintBinField2;
@@ -63,12 +62,14 @@ public class ESLintSettingsPage implements Configurable {
     private JLabel nodeInterpreterLabel;
     private JCheckBox treatAllEslintIssuesCheckBox;
     private JLabel versionLabel;
+    private TextFieldWithHistoryWithBrowseButton rulesPathField;
     private final PackagesNotificationPanel packagesNotificationPanel;
 
     public ESLintSettingsPage(@NotNull final Project project) {
         this.project = project;
         configESLintBinField();
         configESLintRcField();
+        configESLintRulesField();
         configNodeField();
 //        searchForEslintrcInRadioButton.addItemListener(new ItemListener() {
 //            public void itemStateChanged(ItemEvent e) {
@@ -103,7 +104,12 @@ public class ESLintSettingsPage implements Configurable {
         eslintBinField2.getChildComponent().getTextEditor().getDocument().addDocumentListener(docAdp);
         eslintrcFile.getChildComponent().getTextEditor().getDocument().addDocumentListener(docAdp);
         nodeInterpreterField.getChildComponent().getTextEditor().getDocument().addDocumentListener(docAdp);
-        rulesPathField.getDocument().addDocumentListener(docAdp);
+        rulesPathField.getChildComponent().getTextEditor().getDocument().addDocumentListener(docAdp);
+        customRulesPathField.getDocument().addDocumentListener(docAdp);
+    }
+
+    private File getProjectPath() {
+        return new File(project.getBaseDir().getPath());
     }
 
     private void updateLaterInEDT() {
@@ -121,6 +127,7 @@ public class ESLintSettingsPage implements Configurable {
 
     private void setEnabledState(boolean enabled) {
         eslintrcFile.setEnabled(enabled);
+        customRulesPathField.setEnabled(enabled);
         rulesPathField.setEnabled(enabled);
         searchForEslintrcInRadioButton.setEnabled(enabled);
         useProjectEslintrcRadioButton.setEnabled(enabled);
@@ -133,22 +140,24 @@ public class ESLintSettingsPage implements Configurable {
         treatAllEslintIssuesCheckBox.setEnabled(enabled);
     }
 
+    private void validateField(List<ESLintValidationInfo> errors, TextFieldWithHistoryWithBrowseButton field, boolean allowEmpty, String message) {
+        if (!validatePath(field.getChildComponent().getText(), allowEmpty)) {
+            ESLintValidationInfo error = new ESLintValidationInfo(field.getChildComponent().getTextEditor(), message, FIX_IT);
+            errors.add(error);
+        }
+    }
+
     private void validate() {
         List<ESLintValidationInfo> errors = new ArrayList<ESLintValidationInfo>();
-        if (!validatePath(eslintBinField2.getChildComponent().getText(), false)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(eslintBinField2.getChildComponent().getTextEditor(), "Path to eslint is invalid {{LINK}}", FIX_IT);
+        validateField(errors, eslintBinField2, false, "Path to eslint is invalid {{LINK}}");
+        validateField(errors, eslintrcFile, true, "Path to eslintrc is invalid {{LINK}}"); //Please correct path to
+        validateField(errors, nodeInterpreterField, false, "Path to node interpreter is invalid {{LINK}}");
+        if (!validateDirectory(customRulesPathField.getText(), true)) {
+            ESLintValidationInfo error = new ESLintValidationInfo(customRulesPathField, "Path to custom rules is invalid {{LINK}}", FIX_IT);
             errors.add(error);
         }
-        if (!validatePath(eslintrcFile.getChildComponent().getText(), true)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(eslintrcFile.getChildComponent().getTextEditor(), "Path to eslintrc is invalid {{LINK}}", FIX_IT); //Please correct path to
-            errors.add(error);
-        }
-        if (!validatePath(nodeInterpreterField.getChildComponent().getText(), false)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(nodeInterpreterField.getChildComponent().getTextEditor(), "Path to node interpreter is invalid {{LINK}}", FIX_IT);
-            errors.add(error);
-        }
-        if (!validateDirectory(rulesPathField.getText(), true)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(rulesPathField, "Path to rules is invalid {{LINK}}", FIX_IT);
+        if (!validateDirectory(rulesPathField.getChildComponent().getText(), true)) {
+            ESLintValidationInfo error = new ESLintValidationInfo(rulesPathField.getChildComponent().getTextEditor(), "Path to rules is invalid {{LINK}}", FIX_IT);
             errors.add(error);
         }
         if (errors.isEmpty()) {
@@ -168,8 +177,8 @@ public class ESLintSettingsPage implements Configurable {
 
     private void getVersion() {
         if (settings != null &&
-            settings.node.equals(nodeInterpreterField.getChildComponent().getText()) &&
-            settings.eslintExecutablePath.equals(eslintBinField2.getChildComponent().getText()) &&
+            areEqual(nodeInterpreterField, settings.node) &&
+            areEqual(eslintBinField2, settings.eslintExecutablePath) &&
             settings.cwd.equals(project.getBasePath())
                 ) {
             return;
@@ -179,10 +188,8 @@ public class ESLintSettingsPage implements Configurable {
         settings.eslintExecutablePath = eslintBinField2.getChildComponent().getText();
         settings.cwd = project.getBasePath();
         try {
-            ProcessOutput out = ESLintRunner.version(settings);
-            if (out.getExitCode() == 0) {
-                versionLabel.setText(out.getStdout().trim());
-            }
+            String version = ESLintRunner.runVersion(settings);
+            versionLabel.setText(version.trim());
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
@@ -224,44 +231,49 @@ public class ESLintSettingsPage implements Configurable {
         return true;
     }
 
-    private void configESLintBinField() {
-        TextFieldWithHistory textFieldWithHistory = eslintBinField2.getChildComponent();
+    private static TextFieldWithHistory configWithDefaults(TextFieldWithHistoryWithBrowseButton field) {
+        TextFieldWithHistory textFieldWithHistory = field.getChildComponent();
         textFieldWithHistory.setHistorySize(-1);
         textFieldWithHistory.setMinimumAndPreferredWidth(0);
+        return textFieldWithHistory;
+    }
 
-        SwingHelper.addHistoryOnExpansion(textFieldWithHistory, new NotNullProducer<List<String>>() {
+    private void configESLintBinField() {
+        configWithDefaults(eslintBinField2);
+        SwingHelper.addHistoryOnExpansion(eslintBinField2.getChildComponent(), new NotNullProducer<List<String>>() {
             @NotNull
             public List<String> produce() {
-                File projectRoot = new File(project.getBaseDir().getPath());
-                List<File> newFiles = ESLintFinder.searchForESLintBin(projectRoot);
+                List<File> newFiles = ESLintFinder.searchForESLintBin(getProjectPath());
                 return FileUtils.toAbsolutePath(newFiles);
             }
         });
-
         SwingHelper.installFileCompletionAndBrowseDialog(project, eslintBinField2, "Select ESLint.js cli", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
-    private void configESLintRcField() {
-        TextFieldWithHistory textFieldWithHistory = eslintrcFile.getChildComponent();
-        textFieldWithHistory.setHistorySize(-1);
-        textFieldWithHistory.setMinimumAndPreferredWidth(0);
-
+    private void configESLintRulesField() {
+        TextFieldWithHistory textFieldWithHistory = rulesPathField.getChildComponent();
         SwingHelper.addHistoryOnExpansion(textFieldWithHistory, new NotNullProducer<List<String>>() {
             @NotNull
             public List<String> produce() {
-                File projectRoot = new File(project.getBaseDir().getPath());
-                return ESLintFinder.searchForESLintRCFiles(projectRoot);
+                return ESLintFinder.tryFindRulesAsString(getProjectPath());
             }
         });
+        SwingHelper.installFileCompletionAndBrowseDialog(project, rulesPathField, "Select Built in rules", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
+    }
 
+    private void configESLintRcField() {
+        TextFieldWithHistory textFieldWithHistory = configWithDefaults(eslintrcFile);
+        SwingHelper.addHistoryOnExpansion(textFieldWithHistory, new NotNullProducer<List<String>>() {
+            @NotNull
+            public List<String> produce() {
+                return ESLintFinder.searchForESLintRCFiles(getProjectPath());
+            }
+        });
         SwingHelper.installFileCompletionAndBrowseDialog(project, eslintrcFile, "Select ESLint config", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
     private void configNodeField() {
-        TextFieldWithHistory textFieldWithHistory = nodeInterpreterField.getChildComponent();
-        textFieldWithHistory.setHistorySize(-1);
-        textFieldWithHistory.setMinimumAndPreferredWidth(0);
-
+        TextFieldWithHistory textFieldWithHistory = configWithDefaults(nodeInterpreterField);
         SwingHelper.addHistoryOnExpansion(textFieldWithHistory, new NotNullProducer<List<String>>() {
             @NotNull
             public List<String> produce() {
@@ -269,7 +281,6 @@ public class ESLintSettingsPage implements Configurable {
                 return FileUtils.toAbsolutePath(newFiles);
             }
         });
-
         SwingHelper.installFileCompletionAndBrowseDialog(project, nodeInterpreterField, "Select Node interpreter", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
@@ -292,14 +303,20 @@ public class ESLintSettingsPage implements Configurable {
         return panel;
     }
 
+    private static boolean areEqual(TextFieldWithHistoryWithBrowseButton field, String value) {
+        return field.getChildComponent().getText().equals(value);
+    }
+
     @Override
     public boolean isModified() {
-        return pluginEnabledCheckbox.isSelected() != getSettings().pluginEnabled ||
-                !eslintBinField2.getChildComponent().getText().equals(getSettings().eslintExecutable) ||
-                !nodeInterpreterField.getChildComponent().getText().equals(getSettings().nodeInterpreter) ||
-                treatAllEslintIssuesCheckBox.isSelected() != getSettings().treatAllEslintIssuesAsWarnings ||
-                !rulesPathField.getText().equals(getSettings().rulesPath) ||
-                !getESLintRCFile().equals(getSettings().eslintRcFile);
+        Settings s = getSettings();
+        return pluginEnabledCheckbox.isSelected() != s.pluginEnabled ||
+                !areEqual(eslintBinField2, s.eslintExecutable) ||
+                !areEqual(nodeInterpreterField, s.nodeInterpreter) ||
+                treatAllEslintIssuesCheckBox.isSelected() != s.treatAllEslintIssuesAsWarnings ||
+                !customRulesPathField.getText().equals(s.rulesPath) ||
+                !areEqual(rulesPathField, s.builtinRulesPath) ||
+                !getESLintRCFile().equals(s.eslintRcFile);
     }
 
     private String getESLintRCFile() {
@@ -318,7 +335,8 @@ public class ESLintSettingsPage implements Configurable {
         settings.eslintExecutable = eslintBinField2.getChildComponent().getText();
         settings.nodeInterpreter = nodeInterpreterField.getChildComponent().getText();
         settings.eslintRcFile = getESLintRCFile();
-        settings.rulesPath = rulesPathField.getText();
+        settings.rulesPath = customRulesPathField.getText();
+        settings.builtinRulesPath = rulesPathField.getChildComponent().getText();
         settings.treatAllEslintIssuesAsWarnings = treatAllEslintIssuesCheckBox.isSelected();
         project.getComponent(ESLintProjectComponent.class).validateSettings();
         DaemonCodeAnalyzer.getInstance(project).restart();
@@ -330,7 +348,8 @@ public class ESLintSettingsPage implements Configurable {
         eslintBinField2.getChildComponent().setText(settings.eslintExecutable);
         eslintrcFile.getChildComponent().setText(settings.eslintRcFile);
         nodeInterpreterField.getChildComponent().setText(settings.nodeInterpreter);
-        rulesPathField.setText(settings.rulesPath);
+        customRulesPathField.setText(settings.rulesPath);
+        rulesPathField.getChildComponent().setText(settings.builtinRulesPath);
         useProjectEslintrcRadioButton.setSelected(StringUtils.isNotEmpty(settings.eslintRcFile));
         searchForEslintrcInRadioButton.setSelected(StringUtils.isEmpty(settings.eslintRcFile));
         eslintrcFile.setEnabled(useProjectEslintrcRadioButton.isSelected());

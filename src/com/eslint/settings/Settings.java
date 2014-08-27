@@ -18,6 +18,7 @@ public class Settings implements PersistentStateComponent<Settings> {
 
     public String eslintRcFile = DEFAULT_ESLINT_RC;
     public String rulesPath = DEFAULT_RULES_DIR;
+    public String builtinRulesPath = "";
     public String eslintExecutable = "";
     public String nodeInterpreter;
     public boolean treatAllEslintIssuesAsWarnings;
@@ -43,6 +44,6 @@ public class Settings implements PersistentStateComponent<Settings> {
     }
 
     public String getVersion() {
-        return nodeInterpreter + eslintExecutable + eslintRcFile + rulesPath;
+        return nodeInterpreter + eslintExecutable + eslintRcFile + rulesPath + builtinRulesPath;
     }
 }

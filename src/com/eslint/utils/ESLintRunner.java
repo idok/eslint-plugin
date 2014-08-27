@@ -13,6 +13,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 public final class ESLintRunner {
@@ -63,7 +64,7 @@ public final class ESLintRunner {
     }
 
     @NotNull
-    public static ProcessOutput version(@NotNull ESLintSettings settings) throws ExecutionException {
+    private static ProcessOutput version(@NotNull ESLintSettings settings) throws ExecutionException {
         GeneralCommandLine commandLine = createCommandLine(settings);
         commandLine.addParameter("-v");
         return execute(commandLine, TIME_OUT);
@@ -71,6 +72,10 @@ public final class ESLintRunner {
 
     @NotNull
     public static String runVersion(@NotNull ESLintSettings settings) throws ExecutionException {
+        if (!new File(settings.eslintExecutablePath).exists()) {
+            LOG.warn("Calling version with invalid eslint exe " + settings.eslintExecutablePath);
+            return "";
+        }
         ProcessOutput out = version(settings);
         if (out.getExitCode() == 0) {
             return out.getStdout().trim();

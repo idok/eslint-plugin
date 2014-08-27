@@ -1,5 +1,6 @@
 package com.eslint.config.schema;
 
+import com.eslint.ESLintProjectComponent;
 import com.google.common.io.Files;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
@@ -16,8 +17,6 @@ import java.util.Set;
 
 // TODO refresh when config change
 public final class RuleCache {
-    // TODO figure out a way to automatically get this path or add it to config
-    public static String defaultPath = "/usr/local/lib/node_modules/eslint/lib/rules";
 
     public List<String> rules = new ArrayList<String>();
 
@@ -43,30 +42,69 @@ public final class RuleCache {
         rulesMap.addAll(names);
     }
 
-    public static void initialize(Project project, String rulesPath) {
-        instance = new RuleCache();
-        ESLintSchema.load();
-        SchemaJsonObject rules = ESLintSchema.ROOT.findOfType(ESLintSchema.RULES);
-        if (rules != null) {
-            for (BaseType b : rules.properties) {
-                RuleCache.instance.rulesMap.add(b.title);
-            }
+    public void readRules() {
+        SchemaJsonObject schemaRules = ESLintSchema.ROOT.findOfType(ESLintSchema.RULES);
+        if (schemaRules != null) {
+            List<BaseType.SchemaAny> tempRules = ContainerUtil.map(rulesMap, new Function<String, BaseType.SchemaAny>() {
+                @Override
+                public BaseType.SchemaAny fun(String ruleName) {
+                    return new BaseType.SchemaAny(ruleName, ruleName);
+                }
+            });
+            schemaRules.properties = tempRules.toArray(new BaseType[tempRules.size()]);
         }
-        String absRulesPath = FileUtils.resolvePath(project, rulesPath);
-        if (StringUtil.isNotEmpty(absRulesPath)) {
-            instance.read(absRulesPath);
-        }
-//        instance.read(RuleCache.defaultPath);
     }
 
-    // c:/users/user/appdata/roaming/npm/node_modules
+//    private static void initialize(Project project, String builtinRulesPath) {
+//        instance = new RuleCache();
+//        ESLintSchema.load();
+//        SchemaJsonObject rules = ESLintSchema.ROOT.findOfType(ESLintSchema.RULES);
+//        if (rules != null) {
+//            for (BaseType b : rules.properties) {
+//                RuleCache.instance.rulesMap.add(b.title);
+//            }
+//        }
+//        String absRulesPath = FileUtils.resolvePath(project, builtinRulesPath);
+//        if (StringUtil.isNotEmpty(absRulesPath)) {
+//            instance.read(absRulesPath);
+//        }
+////        instance.read(RuleCache.defaultPath);
+//    }
 
-    public static void initializeFromPath(Project project, String rulesPath) {
+//    public static void initializeFromPath(Project project, String builtinRulesPath) {
+//        instance = new RuleCache();
+//        String absRulesPath = FileUtils.resolvePath(project, builtinRulesPath);
+//        if (StringUtil.isNotEmpty(absRulesPath)) {
+//            instance.read(absRulesPath);
+//        }
+//        instance.read(RuleCache.defaultPath);
+//    }
+
+//    public static void initializeFromPath(Project project) {
+//        ESLintProjectComponent component = project.getComponent(ESLintProjectComponent.class);
+//        instance = new RuleCache();
+//        ESLintSchema.load();
+//        String absRulesPath = FileUtils.resolvePath(project, component.rulesPath);
+//        if (StringUtil.isNotEmpty(absRulesPath)) {
+//            instance.read(absRulesPath);
+//        }
+//        instance.read(component.builtinRulesPath);
+//    }
+
+    public static void initializeFromPath(Project project, ESLintProjectComponent component) {
+//        ESLintProjectComponent component = project.getComponent(ESLintProjectComponent.class);
+        String absRulesPath = FileUtils.resolvePath(project, component.customRulesPath);
+        initializeFromPaths(component.rulesPath, absRulesPath);
+    }
+
+    private static void initializeFromPaths(String... paths) {
         instance = new RuleCache();
-        String absRulesPath = FileUtils.resolvePath(project, rulesPath);
-        if (StringUtil.isNotEmpty(absRulesPath)) {
-            instance.read(absRulesPath);
+        ESLintSchema.load();
+        for (String path : paths) {
+            if (StringUtil.isNotEmpty(path)) {
+                instance.read(path);
+            }
         }
-        instance.read(RuleCache.defaultPath);
+        instance.readRules();
     }
 }

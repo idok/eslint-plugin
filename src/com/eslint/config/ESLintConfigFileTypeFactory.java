@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ESLintConfigFileTypeFactory extends FileTypeFactory {
     public void createFileTypes(@NotNull FileTypeConsumer consumer) {
-        consumer.consume(ESLintConfigFileType.INSTANCE,
-                new ExtensionFileNameMatcher(ESLintConfigFileType.ESLINTRC), new ExactFileNameMatcher("eslint.json"));
+        consumer.consume(ESLintConfigFileType.INSTANCE, new ExactFileNameMatcher(ESLintConfigFileType.ESLINTRC));
+//                new ExtensionFileNameMatcher(ESLintConfigFileType.ESLINTRC), new ExactFileNameMatcher("eslint.json"));
     }
 }

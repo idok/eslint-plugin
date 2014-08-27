@@ -14,23 +14,19 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author idok
  */
-public class NoArrayConstructorActionFix extends BaseActionFix {
+public class NoArrayConstructorActionFix extends NoNewBaseActionFix {
     public NoArrayConstructorActionFix(PsiElement element) {
         super(element);
+    }
+
+    @Override
+    protected String getNewExp() {
+        return "[]";
     }
 
     @NotNull
     @Override
     public String getText() {
         return ESLintBundle.message("inspection.fix.no-array-constructor");
-    }
-
-    @Override
-    public void fix(@NotNull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
-        PsiElement parent = element == null ? null : element.getParent();
-        if (!(parent instanceof JSNewExpression)) return;
-        final JSExpressionCodeFragment useStrict = JSElementFactory.createExpressionCodeFragment(project, "[]", parent);
-        PsiElement child = useStrict.getFirstChild();
-        parent.replace(child);
     }
 }

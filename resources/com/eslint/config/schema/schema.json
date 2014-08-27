@@ -1,0 +1,47 @@
+{
+    "title": "root",
+    "type": "OBJECT",
+    "description": "",
+    "properties": [
+        {
+            "title": "env",
+            "type": "OBJECT",
+            "description": "running environment",
+            "properties": [
+                {
+                    "title": "amd",
+                    "type": "BOOLEAN",
+                    "description": "amd"
+                },
+                {
+                    "title": "node",
+                    "type": "BOOLEAN",
+                    "description": "node"
+                },
+                {
+                    "title": "browser",
+                    "type": "BOOLEAN",
+                    "description": "browser"
+                }
+            ]
+        },
+        {
+            "title": "globals",
+            "type": "OBJECT",
+            "description": "globals",
+            "properties": [
+                {
+                    "title": "*",
+                    "type": "BOOLEAN",
+                    "description": ""
+                }
+            ]
+        },
+        {
+            "title": "rules",
+            "type": "OBJECT",
+            "description": "rules",
+            "properties": []
+        }
+    ]
+}

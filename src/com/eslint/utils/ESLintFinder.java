@@ -2,7 +2,9 @@ package com.eslint.utils;
 
 import com.google.common.base.Joiner;
 import com.intellij.execution.configurations.PathEnvironmentVariableUtil;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EnvironmentUtil;
 import com.intellij.util.Function;
@@ -24,7 +26,45 @@ public final class ESLintFinder {
     public static final String NODE_MODULES = "node_modules";
     public static final String DEFAULT_ESLINT_BIN = SystemInfo.isWindows ? "node_modules\\.bin\\eslint.cmd" : "node_modules/eslint/bin/eslint.js";
 
+    // TODO figure out a way to automatically get this path or add it to config
+    // should read from /usr/local/lib/node_modules/eslint/lib/rules
+//    public static String defaultPath = "/usr/local/lib/node_modules/eslint/lib/rules";
+// c:/users/user/appdata/roaming/npm/node_modules
+
     private ESLintFinder() {
+    }
+
+    public static List<File> tryFindRules(File projectRoot) {
+        List<File> options = new ArrayList<File>();
+        String relativeRules = buildPath(NODE_MODULES, "eslint", "lib", "rules");
+        File local = new File(projectRoot, relativeRules);
+        options.add(local);
+        if (SystemInfo.isWindows) {
+            File file = new File("C:\\Program Files (x86)\\nodejs", relativeRules);
+            options.add(file);
+            file = new File("C:\\Program Files\\nodejs", relativeRules);
+            options.add(file);
+        } else {
+            File file = new File("/usr/local/lib", relativeRules);
+            options.add(file);
+        }
+        List<File> valid = ContainerUtil.filter(options, new Condition<File>() {
+            @Override
+            public boolean value(File file) {
+                return file.exists() && file.isDirectory();
+            }
+        });
+        return valid;
+    }
+
+    public static List<String> tryFindRulesAsString(final File projectRoot) {
+        List<File> files = tryFindRules(projectRoot);
+        return ContainerUtil.map(files, new Function<File, String>() {
+            public String fun(File file) {
+//                return FileUtils.makeRelative(projectRoot, file);
+                return FileUtil.isAncestor(projectRoot, file, true) ? FileUtils.makeRelative(projectRoot, file) : file.toString();
+            }
+        });
     }
 
     // List infos = ContainerUtil.newArrayList();
@@ -36,7 +76,7 @@ public final class ESLintFinder {
     }
 
     @NotNull
-    public static List<File> listAllPossibleNodeInterpreters() {
+    public static List<File> listPossibleESLintExe() {
         Set<File> interpreters = ContainerUtil.newLinkedHashSet();
         List<File> fromPath = PathEnvironmentVariableUtil.findAllExeFilesInPath(ESLINT_BASE_NAME);
         List<File> nvmInterpreters = listNodeInterpretersFromNvm();
@@ -52,7 +92,7 @@ public final class ESLintFinder {
     @NotNull
     public static List<File> searchForESLintBin(File projectRoot) {
 //        List<File> nodeModules = searchProjectNodeModules(projectRoot);
-        List<File> globalESLintBin = listAllPossibleNodeInterpreters();
+        List<File> globalESLintBin = listPossibleESLintExe();
 
         if (SystemInfo.isWindows) {
             File file = resolvePath(projectRoot, NODE_MODULES, ".bin", "eslint.cmd");
@@ -148,6 +188,7 @@ public final class ESLintFinder {
 
     /**
      * find possible eslint rc files
+     *
      * @param projectRoot
      * @return
      */
@@ -168,7 +209,7 @@ public final class ESLintFinder {
     }
 
 
-//                List<File> newFiles = NodeDetectionUtil.listAllPossibleNodeInterpreters();
+//                List<File> newFiles = NodeDetectionUtil.listPossibleESLintExe();
 //                return ContainerUtil.map(newFiles, new Function<File, String>() {
 //                    public String fun(File file) {
 //                        return file.getAbsolutePath();
