@@ -63,6 +63,7 @@ public class ESLintSettingsPage implements Configurable {
     private JCheckBox treatAllEslintIssuesCheckBox;
     private JLabel versionLabel;
     private TextFieldWithHistoryWithBrowseButton rulesPathField;
+    private JLabel rulesDirectoryLabel1;
     private final PackagesNotificationPanel packagesNotificationPanel;
 
     public ESLintSettingsPage(@NotNull final Project project) {
@@ -135,6 +136,7 @@ public class ESLintSettingsPage implements Configurable {
         nodeInterpreterField.setEnabled(enabled);
         ESLintConfigFilePathLabel.setEnabled(enabled);
         rulesDirectoryLabel.setEnabled(enabled);
+        rulesDirectoryLabel1.setEnabled(enabled);
         pathToEslintBinLabel.setEnabled(enabled);
         nodeInterpreterLabel.setEnabled(enabled);
         treatAllEslintIssuesCheckBox.setEnabled(enabled);
@@ -148,6 +150,9 @@ public class ESLintSettingsPage implements Configurable {
     }
 
     private void validate() {
+        if (!pluginEnabledCheckbox.isSelected()) {
+            return;
+        }
         List<ESLintValidationInfo> errors = new ArrayList<ESLintValidationInfo>();
         validateField(errors, eslintBinField2, false, "Path to eslint is invalid {{LINK}}");
         validateField(errors, eslintrcFile, true, "Path to eslintrc is invalid {{LINK}}"); //Please correct path to

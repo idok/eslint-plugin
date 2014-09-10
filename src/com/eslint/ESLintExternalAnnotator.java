@@ -31,6 +31,7 @@ import com.intellij.psi.MultiplePsiFilesPerDocumentFileViewProvider;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
 import com.wix.ActualFile;
 import com.wix.ThreadLocalActualFile;
 import com.wix.annotator.ExternalLintAnnotationInput;
@@ -52,7 +53,25 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
     private static final Logger LOG = Logger.getInstance(ESLintBundle.LOG_ID);
     private static final String MESSAGE_PREFIX = "ESLint: ";
     private static final Key<ThreadLocalActualFile> ESLINT_TEMP_FILE_KEY = Key.create("ESLINT_TEMP_FILE");
-    private static final int TABS = 4;
+//    private static final int TABS = 4;
+//    private int tabSize;
+
+//    private static int getTabSize(@NotNull Editor editor) {
+//        // Get tab size
+//        int tabSize = 0;
+//        Project project = editor.getProject();
+//        PsiFile psifile = PsiDocumentManager.getInstance(project).getPsiFile(editor.getDocument());
+//        CommonCodeStyleSettings commonCodeStyleSettings = new CommonCodeStyleSettings(psifile.getLanguage());
+//        CommonCodeStyleSettings.IndentOptions indentOptions = commonCodeStyleSettings.getIndentOptions();
+//
+//        if (indentOptions != null) {
+//            tabSize = commonCodeStyleSettings.getIndentOptions().TAB_SIZE;
+//        }
+//        if (tabSize == 0) {
+//            tabSize = editor.getSettings().getTabSize(editor.getProject());
+//        }
+//        return tabSize;
+//    }
 
     @Nullable
     @Override
@@ -127,7 +146,8 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
         int lineEndOffset = document.getLineEndOffset(line);
         int lineStartOffset = document.getLineStartOffset(line);
 
-        int errorLineStartOffset = PsiUtil.calcErrorStartOffsetInDocument(document, lineStartOffset, lineEndOffset, column, TABS);
+        int errorLineStartOffset = StringUtil.lineColToOffset(document.getCharsSequence(),  line, column);
+//        int errorLineStartOffset = PsiUtil.calcErrorStartOffsetInDocument(document, lineStartOffset, lineEndOffset, column, tab);
 
         if (errorLineStartOffset == -1) {
             return null;
@@ -176,6 +196,8 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
             return null;
         }
         EditorColorsScheme colorsScheme = editor != null ? editor.getColorsScheme() : null;
+//        tabSize = getTabSize(editor);
+//        tabSize = 4;
         return new ExternalLintAnnotationInput(project, psiFile, fileContent, colorsScheme);
     }
 
