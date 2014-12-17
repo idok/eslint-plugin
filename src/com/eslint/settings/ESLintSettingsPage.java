@@ -11,19 +11,17 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.TextFieldWithHistory;
 import com.intellij.ui.TextFieldWithHistoryWithBrowseButton;
-import com.intellij.util.Function;
 import com.intellij.util.NotNullProducer;
-import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.ui.UIUtil;
-import com.intellij.webcore.packaging.PackagesNotificationPanel;
 import com.intellij.webcore.ui.SwingHelper;
+import com.wix.settings.ValidationInfo;
+import com.wix.ui.PackagesNotificationPanel;
 import com.wix.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nls;
@@ -32,7 +30,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -142,9 +139,9 @@ public class ESLintSettingsPage implements Configurable {
         treatAllEslintIssuesCheckBox.setEnabled(enabled);
     }
 
-    private void validateField(List<ESLintValidationInfo> errors, TextFieldWithHistoryWithBrowseButton field, boolean allowEmpty, String message) {
+    private void validateField(List<ValidationInfo> errors, TextFieldWithHistoryWithBrowseButton field, boolean allowEmpty, String message) {
         if (!validatePath(field.getChildComponent().getText(), allowEmpty)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(field.getChildComponent().getTextEditor(), message, FIX_IT);
+            ValidationInfo error = new ValidationInfo(field.getChildComponent().getTextEditor(), message, FIX_IT);
             errors.add(error);
         }
     }
@@ -153,29 +150,22 @@ public class ESLintSettingsPage implements Configurable {
         if (!pluginEnabledCheckbox.isSelected()) {
             return;
         }
-        List<ESLintValidationInfo> errors = new ArrayList<ESLintValidationInfo>();
+        List<ValidationInfo> errors = new ArrayList<ValidationInfo>();
         validateField(errors, eslintBinField2, false, "Path to eslint is invalid {{LINK}}");
         validateField(errors, eslintrcFile, true, "Path to eslintrc is invalid {{LINK}}"); //Please correct path to
         validateField(errors, nodeInterpreterField, false, "Path to node interpreter is invalid {{LINK}}");
         if (!validateDirectory(customRulesPathField.getText(), true)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(customRulesPathField, "Path to custom rules is invalid {{LINK}}", FIX_IT);
+            ValidationInfo error = new ValidationInfo(customRulesPathField, "Path to custom rules is invalid {{LINK}}", FIX_IT);
             errors.add(error);
         }
         if (!validateDirectory(rulesPathField.getChildComponent().getText(), true)) {
-            ESLintValidationInfo error = new ESLintValidationInfo(rulesPathField.getChildComponent().getTextEditor(), "Path to rules is invalid {{LINK}}", FIX_IT);
+            ValidationInfo error = new ValidationInfo(rulesPathField.getChildComponent().getTextEditor(), "Path to rules is invalid {{LINK}}", FIX_IT);
             errors.add(error);
         }
         if (errors.isEmpty()) {
-            try {
-                packagesNotificationPanel.removeAllLinkHandlers();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            packagesNotificationPanel.hide();
             getVersion();
-        } else {
-            showErrors(errors);
         }
+        packagesNotificationPanel.processErrors(errors);
     }
 
     private ESLintRunner.ESLintSettings settings;
@@ -378,28 +368,5 @@ public class ESLintSettingsPage implements Configurable {
     private void createUIComponents() {
         // TODO: place custom component creation code here
         usageLink = SwingHelper.createWebHyperlink(HOW_TO_USE_ESLINT, HOW_TO_USE_LINK);
-    }
-
-    private void showErrors(@NotNull List<ESLintValidationInfo> errors) {
-        List<String> errorHtmlDescriptions = ContainerUtil.map(errors, new Function<ESLintValidationInfo, String>() {
-            public String fun(ESLintValidationInfo info) {
-                return info.getErrorHtmlDescription();
-            }
-        });
-        String styleTag = UIUtil.getCssFontDeclaration(UIUtil.getLabelFont());
-        String html = "<html>" + styleTag + "<body><div style='padding-left:4px;'>" + StringUtil.join(errorHtmlDescriptions, "<div style='padding-top:2px;'/>") + "</div></body></html>";
-
-        for (ESLintValidationInfo error : errors) {
-            String linkText = error.getLinkText();
-            final JTextComponent component = error.getTextComponent();
-            if (linkText != null && component != null) {
-                this.packagesNotificationPanel.addLinkHandler(linkText, new Runnable() {
-                    public void run() {
-                        component.requestFocus();
-                    }
-                });
-            }
-        }
-        this.packagesNotificationPanel.showError(html, null, null);
     }
 }

@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/idok/eslint-plugin">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.21</version>
+    <version>1.0.23</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -13,8 +13,11 @@
     ]]></description>
 
     <change-notes><![CDATA[
+       <p>1.0.23 Class loading bug fixed</p>
+       <p>1.0.22 Intellij 14 / webstorm 9 compatible version</p>
        <p>1.0.21 Bug fixes, doesn't take tab size into account</p>
-       <p>1.0.20 Add settings for eslint builtin rules directory to support completion and annotation on eslintrc files</p>
+       <p>1.0.20 Add settings for
+        eslint builtin rules directory to support completion and annotation on eslintrc files</p>
        <p>1.0.19 Fix windows execution and solve version compatibility issue, thanks <a href="https://github.com/eric-isakson"/>eric-isakson<a/></p>
        <p>1.0.18 fix plugin url</p>
        <p>1.0.17 fix default eslint bin</p>
@@ -37,7 +40,7 @@
     <depends>JavaScript</depends>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="131"/>
+    <idea-version since-build="139"/>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
          on how to target different products -->

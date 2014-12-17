@@ -1,6 +1,7 @@
 package com.eslint.config;
 
-import com.intellij.lang.javascript.json.JSONLanguageDialect;
+import com.intellij.json.JsonLanguage;
+//import com.intellij.lang.javascript.json.JSONLanguageDialect;
 import com.intellij.openapi.fileTypes.LanguageFileType;
 
 import javax.swing.Icon;
@@ -14,7 +15,7 @@ public class ESLintConfigFileType extends LanguageFileType {
     public static final String ESLINTRC = '.' + ESLINTRC_EXT;
 
     private ESLintConfigFileType() {
-        super(JSONLanguageDialect.JSON);
+        super(JsonLanguage.INSTANCE); //JSONLanguageDialect.JSON
     }
 
     @NotNull

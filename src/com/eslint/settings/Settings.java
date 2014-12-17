@@ -11,18 +11,13 @@ import org.jetbrains.annotations.Nullable;
                 @Storage(id = "default", file = StoragePathMacros.PROJECT_FILE),
                 @Storage(id = "dir", file = StoragePathMacros.PROJECT_CONFIG_DIR + "/eslintPlugin.xml", scheme = StorageScheme.DIRECTORY_BASED)})
 public class Settings implements PersistentStateComponent<Settings> {
-    public static final String DEFAULT_ESLINT_RC = ESLintFinder.ESLINTRC;
-    public static final String DEFAULT_RULES_DIR = "";
-    // public static final String DEFAULT_ESLINT_EXE = ""; // TODO use default
-    public static final Boolean DEFAULT_PLUGIN_ENABLED = false;
-
-    public String eslintRcFile = DEFAULT_ESLINT_RC;
-    public String rulesPath = DEFAULT_RULES_DIR;
+    public String eslintRcFile = ESLintFinder.ESLINTRC;
+    public String rulesPath = "";
     public String builtinRulesPath = "";
     public String eslintExecutable = "";
     public String nodeInterpreter;
     public boolean treatAllEslintIssuesAsWarnings;
-    public boolean pluginEnabled = DEFAULT_PLUGIN_ENABLED;
+    public boolean pluginEnabled;
 
     protected Project project;
 

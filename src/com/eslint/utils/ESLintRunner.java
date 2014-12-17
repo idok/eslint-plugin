@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
+import com.wix.nodejs.NodeRunner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,15 +86,7 @@ public final class ESLintRunner {
 
     @NotNull
     private static GeneralCommandLine createCommandLine(@NotNull ESLintSettings settings) {
-        GeneralCommandLine commandLine = new GeneralCommandLine();
-        commandLine.setWorkDirectory(settings.cwd);
-        if (SystemInfo.isWindows) {
-            commandLine.setExePath(settings.eslintExecutablePath);
-        } else {
-            commandLine.setExePath(settings.node);
-            commandLine.addParameter(settings.eslintExecutablePath);
-        }
-        return commandLine;
+        return NodeRunner.createCommandLine(settings.cwd, settings.node, settings.eslintExecutablePath);
     }
 
     @NotNull
