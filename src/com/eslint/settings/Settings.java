@@ -18,6 +18,7 @@ public class Settings implements PersistentStateComponent<Settings> {
     public String nodeInterpreter;
     public boolean treatAllEslintIssuesAsWarnings;
     public boolean pluginEnabled;
+    public String ext = "";
 
     protected Project project;
 
@@ -39,6 +40,6 @@ public class Settings implements PersistentStateComponent<Settings> {
     }
 
     public String getVersion() {
-        return nodeInterpreter + eslintExecutable + eslintRcFile + rulesPath + builtinRulesPath;
+        return nodeInterpreter + eslintExecutable + eslintRcFile + rulesPath + builtinRulesPath + ext;
     }
 }

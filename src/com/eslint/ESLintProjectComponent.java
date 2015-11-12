@@ -27,6 +27,7 @@ public class ESLintProjectComponent implements ProjectComponent {
 
     public String eslintRcFile;
     public String customRulesPath;
+    public String ext;
     public String rulesPath;
     public String eslintExecutable;
     public String nodeInterpreter;
@@ -118,6 +119,7 @@ public class ESLintProjectComponent implements ProjectComponent {
         nodeInterpreter = settings.nodeInterpreter;
         treatAsWarnings = settings.treatAllEslintIssuesAsWarnings;
         pluginEnabled = settings.pluginEnabled;
+        ext = settings.ext;
 
         RuleCache.initializeFromPath(project, this);
 

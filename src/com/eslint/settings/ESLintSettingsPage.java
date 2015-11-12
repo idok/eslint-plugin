@@ -21,6 +21,7 @@ import com.intellij.util.NotNullProducer;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.webcore.ui.SwingHelper;
 import com.wix.settings.ValidationInfo;
+import com.wix.settings.ValidationUtils;
 import com.wix.ui.PackagesNotificationPanel;
 import com.wix.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -61,6 +63,8 @@ public class ESLintSettingsPage implements Configurable {
     private JLabel versionLabel;
     private TextFieldWithHistoryWithBrowseButton rulesPathField;
     private JLabel rulesDirectoryLabel1;
+    private JTextField textFieldExt;
+    private JLabel extensionsLabel;
     private final PackagesNotificationPanel packagesNotificationPanel;
 
     public ESLintSettingsPage(@NotNull final Project project) {
@@ -104,6 +108,7 @@ public class ESLintSettingsPage implements Configurable {
         nodeInterpreterField.getChildComponent().getTextEditor().getDocument().addDocumentListener(docAdp);
         rulesPathField.getChildComponent().getTextEditor().getDocument().addDocumentListener(docAdp);
         customRulesPathField.getDocument().addDocumentListener(docAdp);
+        textFieldExt.getDocument().addDocumentListener(docAdp);
     }
 
     private File getProjectPath() {
@@ -137,12 +142,13 @@ public class ESLintSettingsPage implements Configurable {
         pathToEslintBinLabel.setEnabled(enabled);
         nodeInterpreterLabel.setEnabled(enabled);
         treatAllEslintIssuesCheckBox.setEnabled(enabled);
+        textFieldExt.setEnabled(enabled);
+        extensionsLabel.setEnabled(enabled);
     }
 
     private void validateField(List<ValidationInfo> errors, TextFieldWithHistoryWithBrowseButton field, boolean allowEmpty, String message) {
         if (!validatePath(field.getChildComponent().getText(), allowEmpty)) {
-            ValidationInfo error = new ValidationInfo(field.getChildComponent().getTextEditor(), message, FIX_IT);
-            errors.add(error);
+            addError(errors, field.getChildComponent().getTextEditor(), message, FIX_IT);
         }
     }
 
@@ -155,12 +161,13 @@ public class ESLintSettingsPage implements Configurable {
         validateField(errors, eslintrcFile, true, "Path to eslintrc is invalid {{LINK}}"); //Please correct path to
         validateField(errors, nodeInterpreterField, false, "Path to node interpreter is invalid {{LINK}}");
         if (!validateDirectory(customRulesPathField.getText(), true)) {
-            ValidationInfo error = new ValidationInfo(customRulesPathField, "Path to custom rules is invalid {{LINK}}", FIX_IT);
-            errors.add(error);
+            addError(errors, customRulesPathField, "Path to custom rules is invalid {{LINK}}", FIX_IT);
         }
         if (!validateDirectory(rulesPathField.getChildComponent().getText(), true)) {
-            ValidationInfo error = new ValidationInfo(rulesPathField.getChildComponent().getTextEditor(), "Path to rules is invalid {{LINK}}", FIX_IT);
-            errors.add(error);
+            addError(errors, rulesPathField.getChildComponent().getTextEditor(), "Path to rules is invalid {{LINK}}", FIX_IT);
+        }
+        if (!validateExt(textFieldExt.getText())) {
+            addError(errors, textFieldExt, "Extensions format is invalid, should be e.g. .js,.jsx without white space {{LINK}}", FIX_IT);
         }
         if (errors.isEmpty()) {
             getVersion();
@@ -168,13 +175,22 @@ public class ESLintSettingsPage implements Configurable {
         packagesNotificationPanel.processErrors(errors);
     }
 
+    private static void addError(List<ValidationInfo> errors, @Nullable JTextComponent textComponent, @NotNull String errorHtmlDescriptionTemplate, @NotNull String linkText) {
+        ValidationInfo error = new ValidationInfo(textComponent, errorHtmlDescriptionTemplate, linkText);
+        errors.add(error);
+    }
+
+    private static boolean validateExt(String ext) {
+        return StringUtils.isEmpty(ext) || ext.matches("^(\\.\\w+,?)+$");
+    }
+
     private ESLintRunner.ESLintSettings settings;
 
     private void getVersion() {
         if (settings != null &&
-            areEqual(nodeInterpreterField, settings.node) &&
-            areEqual(eslintBinField2, settings.eslintExecutablePath) &&
-            settings.cwd.equals(project.getBasePath())
+                areEqual(nodeInterpreterField, settings.node) &&
+                areEqual(eslintBinField2, settings.eslintExecutablePath) &&
+                settings.cwd.equals(project.getBasePath())
                 ) {
             return;
         }
@@ -209,21 +225,7 @@ public class ESLintSettingsPage implements Configurable {
     }
 
     private boolean validateDirectory(String path, boolean allowEmpty) {
-        if (StringUtils.isEmpty(path)) {
-            return allowEmpty;
-        }
-        File filePath = new File(path);
-        if (filePath.isAbsolute()) {
-            if (!filePath.exists() || !filePath.isDirectory()) {
-                return false;
-            }
-        } else {
-            VirtualFile child = project.getBaseDir().findFileByRelativePath(path);
-            if (child == null || !child.exists() || !child.isDirectory()) {
-                return false;
-            }
-        }
-        return true;
+        return ValidationUtils.validateDirectory(project, path, allowEmpty);
     }
 
     private static TextFieldWithHistory configWithDefaults(TextFieldWithHistoryWithBrowseButton field) {
@@ -310,6 +312,7 @@ public class ESLintSettingsPage implements Configurable {
                 !areEqual(nodeInterpreterField, s.nodeInterpreter) ||
                 treatAllEslintIssuesCheckBox.isSelected() != s.treatAllEslintIssuesAsWarnings ||
                 !customRulesPathField.getText().equals(s.rulesPath) ||
+                !textFieldExt.getText().equals(s.ext) ||
                 !areEqual(rulesPathField, s.builtinRulesPath) ||
                 !getESLintRCFile().equals(s.eslintRcFile);
     }
@@ -333,8 +336,10 @@ public class ESLintSettingsPage implements Configurable {
         settings.rulesPath = customRulesPathField.getText();
         settings.builtinRulesPath = rulesPathField.getChildComponent().getText();
         settings.treatAllEslintIssuesAsWarnings = treatAllEslintIssuesCheckBox.isSelected();
+        settings.ext = textFieldExt.getText();
         project.getComponent(ESLintProjectComponent.class).validateSettings();
         DaemonCodeAnalyzer.getInstance(project).restart();
+        validate();
     }
 
     protected void loadSettings() {
@@ -344,6 +349,7 @@ public class ESLintSettingsPage implements Configurable {
         eslintrcFile.getChildComponent().setText(settings.eslintRcFile);
         nodeInterpreterField.getChildComponent().setText(settings.nodeInterpreter);
         customRulesPathField.setText(settings.rulesPath);
+        textFieldExt.setText(settings.ext);
         rulesPathField.getChildComponent().setText(settings.builtinRulesPath);
         useProjectEslintrcRadioButton.setSelected(StringUtils.isNotEmpty(settings.eslintRcFile));
         searchForEslintrcInRadioButton.setSelected(StringUtils.isEmpty(settings.eslintRcFile));

@@ -4,6 +4,7 @@ import com.eslint.config.ESLintConfigFileListener;
 import com.eslint.fixes.BaseActionFix;
 import com.eslint.fixes.Fixes;
 import com.eslint.fixes.SuppressActionFix;
+import com.eslint.fixes.SuppressLineActionFix;
 import com.eslint.utils.ESLintRunner;
 import com.eslint.utils.Result;
 import com.intellij.codeInsight.daemon.HighlightDisplayKey;
@@ -122,6 +123,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
                     annotation.registerFix(actionFix, null, inspectionKey);
                 }
                 annotation.registerFix(new SuppressActionFix(warn.rule, lit), null, inspectionKey);
+                annotation.registerFix(new SuppressLineActionFix(warn.rule, lit), null, inspectionKey);
             }
         }
     }
@@ -138,7 +140,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
                                                @NotNull HighlightSeverity severity, @Nullable TextAttributes forcedTextAttributes,
                                                boolean showErrorOnWholeLine) {
         int line = warn.line - 1;
-        int column = warn.column /*- 1*/;
+        int column = warn.column - 1;
 
         if (line < 0 || line >= document.getLineCount()) {
             return null;
@@ -146,7 +148,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
         int lineEndOffset = document.getLineEndOffset(line);
         int lineStartOffset = document.getLineStartOffset(line);
 
-        int errorLineStartOffset = StringUtil.lineColToOffset(document.getCharsSequence(),  line, column);
+        int errorLineStartOffset = StringUtil.lineColToOffset(document.getCharsSequence(), line, column);
 //        int errorLineStartOffset = PsiUtil.calcErrorStartOffsetInDocument(document, lineStartOffset, lineEndOffset, column, tab);
 
         if (errorLineStartOffset == -1) {
@@ -172,7 +174,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
 
     @Nullable
     private static ExternalLintAnnotationInput collectInformation(@NotNull PsiFile psiFile, @Nullable Editor editor) {
-        if (psiFile.getContext() != null || !isJavaScriptFile(psiFile)) {
+        if (psiFile.getContext() != null) {
             return null;
         }
         VirtualFile virtualFile = psiFile.getVirtualFile();
@@ -184,7 +186,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
         }
         Project project = psiFile.getProject();
         ESLintProjectComponent component = project.getComponent(ESLintProjectComponent.class);
-        if (!component.isSettingsValid() || !component.isEnabled()) {
+        if (!component.isSettingsValid() || !component.isEnabled() || !isJavaScriptFile(psiFile, component.ext)) {
             return null;
         }
         Document document = PsiDocumentManager.getInstance(project).getDocument(psiFile);
@@ -195,14 +197,27 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
         if (StringUtil.isEmptyOrSpaces(fileContent)) {
             return null;
         }
-        EditorColorsScheme colorsScheme = editor != null ? editor.getColorsScheme() : null;
+        EditorColorsScheme colorsScheme = editor == null ? null : editor.getColorsScheme();
 //        tabSize = getTabSize(editor);
 //        tabSize = 4;
         return new ExternalLintAnnotationInput(project, psiFile, fileContent, colorsScheme);
     }
 
-    private static boolean isJavaScriptFile(PsiFile file) {
-        return file instanceof JSFile && file.getFileType().equals(JavaScriptFileType.INSTANCE);
+    private static boolean isInList(String file, String ext) {
+        if (StringUtils.isEmpty(ext)) {
+            return false;
+        }
+        String[] exts = ext.split(",");
+        for (String ex : exts) {
+            if (file.endsWith(ex)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isJavaScriptFile(PsiFile file, String ext) {
+        return file instanceof JSFile && file.getFileType().equals(JavaScriptFileType.INSTANCE) || isInList(file.getName(), ext);
     }
 
     @Nullable
@@ -210,9 +225,8 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
     public ExternalLintAnnotationResult<Result> doAnnotate(ExternalLintAnnotationInput collectedInfo) {
         try {
             PsiFile file = collectedInfo.psiFile;
-            if (!isJavaScriptFile(file)) return null;
             ESLintProjectComponent component = file.getProject().getComponent(ESLintProjectComponent.class);
-            if (!component.isSettingsValid() || !component.isEnabled()) {
+            if (!component.isSettingsValid() || !component.isEnabled() || !isJavaScriptFile(file, component.ext)) {
                 return null;
             }
 
@@ -223,7 +237,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
                 return null;
             }
             relativeFile = FileUtils.makeRelative(new File(file.getProject().getBasePath()), actualCodeFile.getFile());
-            Result result = ESLintRunner.lint(file.getProject().getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath);
+            Result result = ESLintRunner.lint(file.getProject().getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.settings.ext);
 
             actualCodeFile.deleteTemp();
             if (StringUtils.isNotEmpty(result.errorOutput)) {

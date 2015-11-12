@@ -1,12 +1,19 @@
-package com.eslint;
+package com.eslint.inspection;
 
+import com.eslint.ESLintBundle;
 import com.intellij.codeInsight.FileModificationService;
+import com.intellij.codeInsight.daemon.HighlightDisplayKey;
+import com.intellij.codeInsight.daemon.impl.actions.SuppressByCommentFix;
 import com.intellij.codeInspection.CustomSuppressableInspectionTool;
 import com.intellij.codeInspection.LocalInspectionTool;
 import com.intellij.codeInspection.SuppressIntentionAction;
+import com.intellij.codeInspection.SuppressQuickFix;
+import com.intellij.lang.javascript.inspections.JSInspectionSuppressor;
+import com.intellij.lang.javascript.linter.jshint.JSHintInspection;
 import com.intellij.lang.javascript.psi.JSElement;
 import com.intellij.lang.javascript.psi.JSFile;
 import com.intellij.lang.javascript.psi.impl.JSFileImpl;
+import com.intellij.openapi.command.CommandProcessor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -19,8 +26,9 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public abstract class PropertySuppressableInspectionBase extends LocalInspectionTool implements CustomSuppressableInspectionTool {
+public abstract class PropertySuppressableInspectionBase extends LocalInspectionTool { //implements CustomSuppressableInspectionTool {
     private static final Logger LOG = Logger.getInstance("#com.intellij.lang.properties.PropertySuppressableInspectionBase");
 
     @NotNull
@@ -30,9 +38,47 @@ public abstract class PropertySuppressableInspectionBase extends LocalInspection
 
     public SuppressIntentionAction[] getSuppressActions(final PsiElement element) {
         PsiNamedElement pe = getProblemElement(element);
-
         return new SuppressIntentionAction[]{new SuppressForStatement(getShortName()), new SuppressForFile(getShortName())};
     }
+
+    @NotNull
+    public SuppressQuickFix[] getBatchSuppressActions(@Nullable PsiElement element) {
+        return new SuppressQuickFix[]{new ESLintSuppressByCommentFix(HighlightDisplayKey.find(this.getShortName()), JSInspectionSuppressor.getHolderClass(element))};
+    }
+
+    public static class ESLintSuppressByCommentFix extends SuppressByCommentFix {
+        public ESLintSuppressByCommentFix(HighlightDisplayKey key, Class<? extends PsiElement> suppressionHolderClass) {
+            super(key, suppressionHolderClass);
+        }
+
+        @NotNull
+        public String getText() {
+            return "Suppress for line";
+        }
+
+        protected void createSuppression(@NotNull Project project, @NotNull PsiElement element, @NotNull PsiElement container) throws IncorrectOperationException {
+            if (element.isValid()) {
+                PsiFile psiFile = element.getContainingFile();
+                if (psiFile != null) {
+                    psiFile = psiFile.getOriginalFile();
+                }
+
+                if (psiFile != null && psiFile.isValid()) {
+                    final Document document = PsiDocumentManager.getInstance(project).getDocument(psiFile);
+                    if (document != null) {
+                        int lineNo = document.getLineNumber(element.getTextOffset());
+                        final int lineEndOffset = document.getLineEndOffset(lineNo);
+                        CommandProcessor.getInstance().executeCommand(project, new Runnable() {
+                            public void run() {
+                                document.insertString(lineEndOffset, " //eslint-disable-line");
+                            }
+                        }, null, null);
+                    }
+                }
+            }
+        }
+    }
+
 
     public boolean isSuppressedFor(@NotNull PsiElement element) {
 //        Property property = PsiTreeUtil.getParentOfType(element, Property.class, false);
@@ -110,9 +156,8 @@ public abstract class PropertySuppressableInspectionBase extends LocalInspection
             @NonNls final Document doc = PsiDocumentManager.getInstance(project).getDocument(file);
             LOG.assertTrue(doc != null);
             final int line = doc.getLineNumber(start);
-            final int lineStart = doc.getLineStartOffset(line);
-
-            doc.insertString(lineStart, "// eslint suppress inspection \"" + rule + "\"\n");
+            final int lineEnd = doc.getLineEndOffset(line);
+            doc.insertString(lineEnd, " //eslint-disable-line " + rule);
         }
     }
 
@@ -148,4 +193,6 @@ public abstract class PropertySuppressableInspectionBase extends LocalInspection
             doc.insertString(0, "/* eslint-disable */\n");
         }
     }
+
+    //doc.insertString(lineStart, "/*eslint " + rule + ":0*/\n");
 }

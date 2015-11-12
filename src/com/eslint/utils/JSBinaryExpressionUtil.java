@@ -20,7 +20,6 @@ public final class JSBinaryExpressionUtil {
                 return psiElement instanceof JSBinaryExpression;
             }
         });
-        ASTNode op = ((JSBinaryExpression) binary).getNode().getChildren(BINARY_OPERATIONS)[0];
-        return op;
+        return binary.getNode().getChildren(BINARY_OPERATIONS)[0];
     }
 }

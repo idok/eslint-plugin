@@ -1,15 +1,11 @@
 package com.eslint.utils;
 
 import com.eslint.ESLintProjectComponent;
-import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.notification.NotificationType;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import com.wix.nodejs.NodeRunner;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,9 +28,14 @@ public final class ESLintRunner {
         public String config;
         public String cwd;
         public String targetFile;
+        public String ext;
     }
 
-    public static ESLintSettings buildSettings(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir) {
+    public static ESLintSettings buildSettings(@NotNull String cwd, @NotNull String path, @NotNull ESLintProjectComponent component) {
+        return ESLintRunner.buildSettings(cwd, path, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.ext);
+    }
+
+    public static ESLintSettings buildSettings(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir, @Nullable String ext) {
         ESLintRunner.ESLintSettings settings = new ESLintRunner.ESLintSettings();
         settings.cwd = cwd;
         settings.eslintExecutablePath = eslintBin;
@@ -42,17 +43,18 @@ public final class ESLintRunner {
         settings.rules = rulesdir;
         settings.config = eslintrc;
         settings.targetFile = path;
+        settings.ext = ext;
         return settings;
     }
 
     @NotNull
     public static ProcessOutput lint(@NotNull ESLintSettings settings) throws ExecutionException {
-        GeneralCommandLine commandLine = createCommandLineLint(settings);
-        return execute(commandLine, TIME_OUT);
+        GeneralCommandLine commandLine = CliBuilder.createLint(settings);
+        return NodeRunner.execute(commandLine, TIME_OUT);
     }
 
-    public static Result lint(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir) {
-        ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(cwd, path, nodeInterpreter, eslintBin, eslintrc, rulesdir);
+    public static Result lint(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir, @Nullable String ext) {
+        ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(cwd, path, nodeInterpreter, eslintBin, eslintrc, rulesdir, ext);
         try {
             ProcessOutput output = ESLintRunner.lint(settings);
             return Result.processResults(output);
@@ -65,10 +67,15 @@ public final class ESLintRunner {
     }
 
     @NotNull
+    public static ProcessOutput fix(@NotNull ESLintSettings settings) throws ExecutionException {
+        GeneralCommandLine commandLine = CliBuilder.createFix(settings);
+        return NodeRunner.execute(commandLine, TIME_OUT);
+    }
+
+    @NotNull
     private static ProcessOutput version(@NotNull ESLintSettings settings) throws ExecutionException {
-        GeneralCommandLine commandLine = createCommandLine(settings);
-        commandLine.addParameter("-v");
-        return execute(commandLine, TIME_OUT);
+        GeneralCommandLine commandLine = CliBuilder.createVersion(settings);
+        return NodeRunner.execute(commandLine, TIME_OUT);
     }
 
     @NotNull
@@ -82,54 +89,5 @@ public final class ESLintRunner {
             return out.getStdout().trim();
         }
         return "";
-    }
-
-    @NotNull
-    private static GeneralCommandLine createCommandLine(@NotNull ESLintSettings settings) {
-        return NodeRunner.createCommandLine(settings.cwd, settings.node, settings.eslintExecutablePath);
-    }
-
-    @NotNull
-    private static GeneralCommandLine createCommandLineLint(@NotNull ESLintSettings settings) {
-        GeneralCommandLine commandLine = createCommandLine(settings);
-        // TODO validate arguments (file exist etc)
-        commandLine.addParameter(settings.targetFile);
-        if (StringUtil.isNotEmpty(settings.config)) {
-            commandLine.addParameter("-c");
-            commandLine.addParameter(settings.config);
-        }
-        if (StringUtil.isNotEmpty(settings.rules)) {
-            commandLine.addParameter("--rulesdir");
-            commandLine.addParameter("['" + settings.rules + "']");
-        }
-        return commandLine;
-    }
-
-    @NotNull
-    private static ProcessOutput execute(@NotNull GeneralCommandLine commandLine, int timeoutInMilliseconds) throws ExecutionException {
-        LOG.info("Running eslint command: " + commandLine.getCommandLineString());
-        Process process = commandLine.createProcess();
-        OSProcessHandler processHandler = new ColoredProcessHandler(process, commandLine.getCommandLineString(), Charsets.UTF_8);
-        final ProcessOutput output = new ProcessOutput();
-        processHandler.addProcessListener(new ProcessAdapter() {
-            public void onTextAvailable(ProcessEvent event, Key outputType) {
-                if (outputType.equals(ProcessOutputTypes.STDERR)) {
-                    output.appendStderr(event.getText());
-                } else if (!outputType.equals(ProcessOutputTypes.SYSTEM)) {
-                    output.appendStdout(event.getText());
-                }
-            }
-        });
-        processHandler.startNotify();
-        if (processHandler.waitFor(timeoutInMilliseconds)) {
-            output.setExitCode(process.exitValue());
-        } else {
-            processHandler.destroyProcess();
-            output.setTimeout();
-        }
-        if (output.isTimeout()) {
-            throw new ExecutionException("Command '" + commandLine.getCommandLineString() + "' is timed out.");
-        }
-        return output;
     }
 }

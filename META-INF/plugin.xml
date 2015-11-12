@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/idok/eslint-plugin">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.23</version>
+    <version>1.0.25</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -13,6 +13,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+       <p>1.0.25 Add --ext. Bug fixes</p>
+       <p>1.0.24 Add --fix option as an action from code menu. Bug fixes</p>
        <p>1.0.23 Class loading bug fixed</p>
        <p>1.0.22 Intellij 14 / webstorm 9 compatible version</p>
        <p>1.0.21 Bug fixes, doesn't take tab size into account</p>
@@ -38,6 +40,7 @@
     <depends>com.intellij.modules.lang</depends>
     <!--<depends>com.intellij.modules.platform</depends>-->
     <depends>JavaScript</depends>
+    <depends>org.jetbrains.plugins.yaml</depends>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="139"/>
@@ -63,6 +66,8 @@
         <!-- annotate .eslintrc -->
         <projectService serviceImplementation="com.eslint.config.ESLintConfigFileListener"/>
         <fileTypeFactory implementation="com.eslint.config.ESLintConfigFileTypeFactory"/>
+
+        <!--<fileTypeDetector implementation="com.eslint.config.ESLintConfigFileTypeDetector" />-->
         <completion.contributor order="first" language="JavaScript" implementationClass="com.eslint.config.ESLintConfigCompletionContributor"/>
         <annotator language="JSON" implementationClass="com.eslint.config.ESLintConfigAnnotator"/>
     </extensions>
@@ -80,6 +85,9 @@
 
     <actions>
         <!-- Add your actions here -->
+        <action id="com.eslint" class="com.eslint.actions.ESLintFixAction" text="ESLint Fix" description="use ESLint to Fix ESLint issues">
+            <add-to-group group-id="CodeMenu" anchor="last"/>
+        </action>
     </actions>
 
 </idea-plugin>
