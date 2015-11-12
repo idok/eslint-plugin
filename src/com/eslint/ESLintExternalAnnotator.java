@@ -224,21 +224,20 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
     @Override
     public ExternalLintAnnotationResult<Result> doAnnotate(ExternalLintAnnotationInput collectedInfo) {
         try {
+            LOG.info("Running ESLint inspection");
             PsiFile file = collectedInfo.psiFile;
             ESLintProjectComponent component = file.getProject().getComponent(ESLintProjectComponent.class);
             if (!component.isSettingsValid() || !component.isEnabled() || !isJavaScriptFile(file, component.ext)) {
                 return null;
             }
-
             ESLintConfigFileListener.start(collectedInfo.project);
             String relativeFile;
             ActualFile actualCodeFile = ActualFile.getOrCreateActualFile(ESLINT_TEMP_FILE_KEY, file.getVirtualFile(), collectedInfo.fileContent);
             if (actualCodeFile == null || actualCodeFile.getFile() == null) {
                 return null;
             }
-            relativeFile = FileUtils.makeRelative(new File(file.getProject().getBasePath()), actualCodeFile.getFile());
+            relativeFile = FileUtils.makeRelative(new File(file.getProject().getBasePath()), actualCodeFile.getActualFile());
             Result result = ESLintRunner.lint(file.getProject().getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.settings.ext);
-
             actualCodeFile.deleteTemp();
             if (StringUtils.isNotEmpty(result.errorOutput)) {
                 component.showInfoNotification(result.errorOutput, NotificationType.WARNING);
@@ -257,14 +256,4 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
         }
         return null;
     }
-
-//    static class ESLintAnnotationResult {
-//        public ESLintAnnotationResult(ExternalLintAnnotationInput input, Result result) {
-//            this.input = input;
-//            this.result = result;
-//        }
-//
-//        public final ExternalLintAnnotationInput input;
-//        public final Result result;
-//    }
 }
