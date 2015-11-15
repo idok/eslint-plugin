@@ -11,6 +11,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author idok
@@ -28,7 +29,7 @@ public class EqeqeqActionFix extends BaseActionFix {
     }
 
     @Override
-    public void fix(@NotNull Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
+    public void invoke(@NotNull Project project, @NotNull PsiFile psiFile, @Nullable("is null when called from inspection") Editor editor, @NotNull PsiElement element, @NotNull PsiElement end) throws IncorrectOperationException {
         ASTNode op = JSBinaryExpressionUtil.getOperator(element);
         Document document = PsiDocumentManager.getInstance(project).getDocument(element.getContainingFile());
 
@@ -40,5 +41,4 @@ public class EqeqeqActionFix extends BaseActionFix {
         }
         document.replaceString(op.getStartOffset(), op.getStartOffset() + op.getTextLength(), replace);
     }
-
 }

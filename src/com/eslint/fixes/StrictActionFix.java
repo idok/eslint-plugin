@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author idok
@@ -25,8 +26,8 @@ public class StrictActionFix extends BaseActionFix {
     }
 
     @Override
-    public void fix(@NotNull final Project project, Editor editor, PsiFile file) throws IncorrectOperationException {
-        final PsiElement parent = element == null ? null : element.getParent();
+    public void invoke(@NotNull Project project, @NotNull PsiFile psiFile, @Nullable("is null when called from inspection") Editor editor, @NotNull PsiElement element, @NotNull PsiElement end) throws IncorrectOperationException {
+        final PsiElement parent = element.getParent();
         if (!(parent instanceof JSFunctionExpression || parent instanceof JSFunction)) return;
 
 //            if (parent.getChildren().length < 2) {
