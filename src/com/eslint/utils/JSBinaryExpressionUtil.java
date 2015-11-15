@@ -20,6 +20,6 @@ public final class JSBinaryExpressionUtil {
                 return psiElement instanceof JSBinaryExpression;
             }
         });
-        return binary.getNode().getChildren(BINARY_OPERATIONS)[0];
+        return binary == null ? null : binary.getNode().getChildren(BINARY_OPERATIONS)[0];
     }
 }
