@@ -112,6 +112,9 @@ public class ESLintSettingsPage implements Configurable {
     }
 
     private File getProjectPath() {
+        if (project.isDefault()) {
+            return null;
+        }
         return new File(project.getBaseDir().getPath());
     }
 
@@ -169,7 +172,7 @@ public class ESLintSettingsPage implements Configurable {
         if (!validateExt(textFieldExt.getText())) {
             addError(errors, textFieldExt, "Extensions format is invalid, should be e.g. .js,.jsx without white space {{LINK}}", FIX_IT);
         }
-        if (errors.isEmpty()) {
+        if (errors.isEmpty() && !project.isDefault()) {
             getVersion();
         }
         packagesNotificationPanel.processErrors(errors);
@@ -216,6 +219,9 @@ public class ESLintSettingsPage implements Configurable {
                 return false;
             }
         } else {
+            if (project.isDefault()) {
+                return false;
+            }
             VirtualFile child = project.getBaseDir().findFileByRelativePath(path);
             if (child == null || !child.exists() || child.isDirectory()) {
                 return false;
@@ -284,7 +290,7 @@ public class ESLintSettingsPage implements Configurable {
     @Nls
     @Override
     public String getDisplayName() {
-        return "ESLint Plugin";
+        return "ESLint";
     }
 
     @Nullable
@@ -337,13 +343,16 @@ public class ESLintSettingsPage implements Configurable {
         settings.builtinRulesPath = rulesPathField.getChildComponent().getText();
         settings.treatAllEslintIssuesAsWarnings = treatAllEslintIssuesCheckBox.isSelected();
         settings.ext = textFieldExt.getText();
-        project.getComponent(ESLintProjectComponent.class).validateSettings();
-        DaemonCodeAnalyzer.getInstance(project).restart();
+        if (!project.isDefault()) {
+            project.getComponent(ESLintProjectComponent.class).validateSettings();
+            DaemonCodeAnalyzer.getInstance(project).restart();
+        }
         validate();
     }
 
     protected void loadSettings() {
         Settings settings = getSettings();
+        setEnabledState(settings.pluginEnabled);
         pluginEnabledCheckbox.setSelected(settings.pluginEnabled);
         eslintBinField2.getChildComponent().setText(settings.eslintExecutable);
         eslintrcFile.getChildComponent().setText(settings.eslintRcFile);
@@ -355,7 +364,6 @@ public class ESLintSettingsPage implements Configurable {
         searchForEslintrcInRadioButton.setSelected(StringUtils.isEmpty(settings.eslintRcFile));
         eslintrcFile.setEnabled(useProjectEslintrcRadioButton.isSelected());
         treatAllEslintIssuesCheckBox.setSelected(settings.treatAllEslintIssuesAsWarnings);
-        setEnabledState(settings.pluginEnabled);
     }
 
     @Override

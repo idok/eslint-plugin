@@ -54,7 +54,10 @@ public final class ESLintFinder {
         return ContainerUtil.map(files, new Function<File, String>() {
             public String fun(File file) {
 //                return FileUtils.makeRelative(projectRoot, file);
-                return FileUtil.isAncestor(projectRoot, file, true) ? FileUtils.makeRelative(projectRoot, file) : file.toString();
+                if (projectRoot != null && FileUtil.isAncestor(projectRoot, file, true)) {
+                    return FileUtils.makeRelative(projectRoot, file);
+                }
+                return file.toString();
             }
         });
     }
@@ -79,7 +82,7 @@ public final class ESLintFinder {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File file, String name) {
-                return name.equals(ESLINTRC);
+                return name.equals(ESLINTRC) || name.startsWith(ESLINTRC + '.');
             }
         };
         // return Arrays.asList(files);
