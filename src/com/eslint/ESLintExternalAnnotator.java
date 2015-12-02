@@ -7,6 +7,7 @@ import com.eslint.fixes.SuppressActionFix;
 import com.eslint.fixes.SuppressLineActionFix;
 import com.eslint.utils.ESLintRunner;
 import com.eslint.utils.Result;
+import com.eslint.utils.VerifyMessage;
 import com.intellij.codeInsight.daemon.HighlightDisplayKey;
 import com.intellij.codeInsight.daemon.impl.SeverityRegistrar;
 import com.intellij.lang.annotation.Annotation;
@@ -111,32 +112,32 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
             return;
         }
         ESLintProjectComponent component = annotationResult.input.project.getComponent(ESLintProjectComponent.class);
-        for (Result.Warn warn : annotationResult.result.warns) {
+        for (VerifyMessage warn : annotationResult.result.warns) {
             HighlightSeverity severity = getHighlightSeverity(warn, component.treatAsWarnings);
             TextAttributes forcedTextAttributes = JSLinterUtil.getTextAttributes(colorsScheme, severityRegistrar, severity);
             Annotation annotation = createAnnotation(holder, file, document, warn, severity, forcedTextAttributes, false);
             if (annotation != null) {
                 int offset = StringUtil.lineColToOffset(document.getText(), warn.line - 1, warn.column);
                 PsiElement lit = PsiUtil.getElementAtOffset(file, offset);
-                BaseActionFix actionFix = Fixes.getFixForRule(warn.rule, lit);
+                BaseActionFix actionFix = Fixes.getFixForRule(warn.ruleId, lit);
                 if (actionFix != null) {
                     annotation.registerFix(actionFix, null, inspectionKey);
                 }
-                annotation.registerFix(new SuppressActionFix(warn.rule, lit), null, inspectionKey);
-                annotation.registerFix(new SuppressLineActionFix(warn.rule, lit), null, inspectionKey);
+                annotation.registerFix(new SuppressActionFix(warn.ruleId, lit), null, inspectionKey);
+                annotation.registerFix(new SuppressLineActionFix(warn.ruleId, lit), null, inspectionKey);
             }
         }
     }
 
-    private static HighlightSeverity getHighlightSeverity(Result.Warn warn, boolean treatAsWarnings) {
+    private static HighlightSeverity getHighlightSeverity(VerifyMessage warn, boolean treatAsWarnings) {
         if (treatAsWarnings) {
             return HighlightSeverity.WARNING;
         }
-        return warn.level.equals("error") ? HighlightSeverity.ERROR : HighlightSeverity.WARNING;
+        return warn.severity == 2 ? HighlightSeverity.ERROR : HighlightSeverity.WARNING;
     }
 
     @Nullable
-    private static Annotation createAnnotation(@NotNull AnnotationHolder holder, @NotNull PsiFile file, @NotNull Document document, @NotNull Result.Warn warn,
+    private static Annotation createAnnotation(@NotNull AnnotationHolder holder, @NotNull PsiFile file, @NotNull Document document, @NotNull VerifyMessage warn,
                                                @NotNull HighlightSeverity severity, @Nullable TextAttributes forcedTextAttributes,
                                                boolean showErrorOnWholeLine) {
         int line = warn.line - 1;
@@ -165,7 +166,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
 //            range = new TextRange(errorLineStartOffset, errorLineStartOffset + 1);
         }
 
-        Annotation annotation = JSLinterUtil.createAnnotation(holder, severity, forcedTextAttributes, range, MESSAGE_PREFIX + warn.message.trim() + " (" + warn.rule + ')');
+        Annotation annotation = JSLinterUtil.createAnnotation(holder, severity, forcedTextAttributes, range, MESSAGE_PREFIX + warn.message.trim() + " (" + warn.ruleId + ')');
         if (annotation != null) {
             annotation.setAfterEndOfLine(errorLineStartOffset == lineEndOffset);
         }

@@ -1,65 +1,41 @@
 package com.eslint.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.intellij.execution.process.ProcessOutput;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * ESLint result
  * Created by idok on 8/25/14.
  */
 public class Result {
-    public List<Warn> warns = new ArrayList<Warn>();
+    public List<VerifyMessage> warns = new ArrayList<VerifyMessage>();
     public String errorOutput;
 
-    private static final Pattern PATTERN = Pattern.compile("(\\d+):(\\d+)\\s+(\\w+)\\s+([\\w\\W]+)\\s+([\\w-]+)");
-//    private static final Logger LOG = Logger.getInstance(ESLintBundle.LOG_ID);
+    private static List<FileResult> parseInternal(String json) {
+        GsonBuilder builder = new GsonBuilder();
+//        builder.registerTypeAdapterFactory(adapter);
+        Gson g = builder.setPrettyPrinting().create();
+        Type listType = new TypeToken<ArrayList<FileResult>>() {}.getType();
+        return g.fromJson(json, listType);
+    }
 
     public static Result processResults(ProcessOutput output) {
         Result result = new Result();
-        List<String> lines = output.getStdoutLines();
-        String file = null;
-        for (String line : lines) {
-            if (file == null) {
-                file = line;
-            }
-            Warn warn = parseLine(line);
-            if (warn != null) {
-                result.warns.add(warn);
-            }
-        }
         result.errorOutput = output.getStderr();
-        return result;
-    }
-
-    private static Warn parseLine(String line) {
-        Warn warn = null;
-        Matcher matcher = PATTERN.matcher(line);
-        if (matcher.find() && matcher.groupCount() == 5) {
-            warn = new Warn();
-            warn.line = Integer.parseInt(matcher.group(1));
-            warn.column = Integer.parseInt(matcher.group(2));
-            warn.level = matcher.group(3);
-            warn.message = matcher.group(4);
-            warn.rule = matcher.group(5);
+        try {
+            List<FileResult> fileResults = parseInternal(output.getStdout());
+            if (!fileResults.isEmpty()) {
+                result.warns = fileResults.get(0).messages;
+            }
+        } catch (Exception e) {
+            result.errorOutput = e.toString();
         }
-//        while (matcher.find()) {
-//            LOG.debug("I found the text \"%s\" starting at index %d and ending at index %d.%n",
-//                    matcher.group(),
-//                    matcher.start(),
-//                    matcher.end());
-//        }
-        return warn;
-    }
-
-    public static class Warn {
-        public int line;
-        public int column;
-        public String message;
-        public String level;
-        public String rule;
+        return result;
     }
 }

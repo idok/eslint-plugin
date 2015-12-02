@@ -13,6 +13,8 @@ final class CliBuilder {
     public static final String EXT = "--ext";
     public static final String C = "-c";
     public static final String FIX = "--fix";
+    public static final String FORMAT = "--format";
+    public static final String JSON = "json";
 
     private CliBuilder() {
     }
@@ -34,6 +36,7 @@ final class CliBuilder {
         if (StringUtil.isNotEmpty(settings.ext)) {
             CLI.addParam(commandLine, EXT, settings.ext);
         }
+        CLI.addParam(commandLine, FORMAT, JSON);
         return commandLine;
     }
 

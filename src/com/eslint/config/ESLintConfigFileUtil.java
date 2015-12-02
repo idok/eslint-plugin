@@ -9,8 +9,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ObjectUtils;
+import com.intellij.util.containers.HashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author idok
@@ -19,11 +23,20 @@ public final class ESLintConfigFileUtil {
     private ESLintConfigFileUtil() {
     }
 
+    private static final Set<String> FILES = createSet();
+
     public static boolean isESLintConfigFile(JSFile file) {
-        if (file == null) {
-            return false;
-        }
-        return isESLintConfigFile(file.getVirtualFile()) || file.getFileType().equals(ESLintConfigFileType.INSTANCE);
+        return file != null && (isESLintConfigFile(file.getVirtualFile()) || file.getFileType().equals(ESLintConfigFileType.INSTANCE));
+    }
+
+    private static Set<String> createSet() {
+        Set<String> s = new HashSet<String>();
+        Collections.addAll(s, ESLintConfigFileType.ESLINTRC_FILES);
+        return s;
+    }
+
+    public static boolean isRC(String fileName) {
+        return FILES.contains(fileName);
     }
 
     public static boolean isESLintConfigFile(PsiElement position) {
@@ -31,9 +44,9 @@ public final class ESLintConfigFileUtil {
     }
 
     public static boolean isESLintConfigFile(VirtualFile file) {
-        return file != null && file.getName().equals(ESLintConfigFileType.ESLINTRC);
+//        return file != null && file.getName().equals(ESLintConfigFileType.ESLINTRC);
+        return file != null && isRC(file.getName());
     }
-
 
     @Nullable
     public static JSProperty getProperty(@NotNull PsiElement position) {

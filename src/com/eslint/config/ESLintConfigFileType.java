@@ -13,6 +13,7 @@ public class ESLintConfigFileType extends LanguageFileType {
     public static final ESLintConfigFileType INSTANCE = new ESLintConfigFileType();
     public static final String ESLINTRC_EXT = "eslintrc";
     public static final String ESLINTRC = '.' + ESLINTRC_EXT;
+    public static final String[] ESLINTRC_FILES = {ESLINTRC, ESLINTRC + ".js", ESLINTRC + ".yml", ESLINTRC + ".yaml", ESLINTRC + ".json"};
 
     private ESLintConfigFileType() {
         super(JsonLanguage.INSTANCE); //JSONLanguageDialect.JSON
