@@ -9,7 +9,7 @@ ESLint plugin for WebStorm, PHPStorm and other Idea family IDE with Javascript p
 ## Bundled plugin ##
 As of Intellij 14, a plugin based on this one was bundled into the IDE release by Jetbrains.
 What's the diffrence?
-This plugin support --fix option, quick fixes and other minor diffrances.
+This plugin supports Intellij 13 and other versions, --fix option, quick fixes and other minor diffrances.
 Please make sure you are refferring to this one before opening an issue.
 
 
