@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/idok/eslint-plugin">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.28</version>
+    <version>1.0.30</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -13,6 +13,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+       <p>1.0.30 Fix NPE</p>
+       <p>1.0.29 Bug fixes</p>
        <p>1.0.28 Fix default settings, support rc files with extensions, bug fixes</p>
        <p>1.0.27 Bug fixes</p>
        <p>1.0.26 Bug fixes</p>

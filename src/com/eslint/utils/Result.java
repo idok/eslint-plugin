@@ -30,7 +30,7 @@ public class Result {
         result.errorOutput = output.getStderr();
         try {
             List<FileResult> fileResults = parseInternal(output.getStdout());
-            if (!fileResults.isEmpty()) {
+            if (fileResults != null && !fileResults.isEmpty()) {
                 result.warns = fileResults.get(0).messages;
             }
         } catch (Exception e) {

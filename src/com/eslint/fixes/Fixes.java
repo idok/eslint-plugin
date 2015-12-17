@@ -1,5 +1,6 @@
 package com.eslint.fixes;
 
+import com.google.common.base.Strings;
 import com.intellij.psi.PsiElement;
 
 public final class Fixes {
@@ -9,6 +10,9 @@ public final class Fixes {
     public static BaseActionFix getFixForRule(String rule, PsiElement element) {
 //        Map<String, BaseActionFix> map = new HashMap<String, BaseActionFix>();
 //        map.put("strict", )
+        if (Strings.isNullOrEmpty(rule)) {
+            return null;
+        }
         if (rule.equals("strict")) {
             return new StrictActionFix(element);
         }
