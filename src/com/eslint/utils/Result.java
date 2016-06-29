@@ -34,7 +34,8 @@ public class Result {
                 result.warns = fileResults.get(0).messages;
             }
         } catch (Exception e) {
-            result.errorOutput = e.toString();
+            result.errorOutput = output.getStdout();
+//            result.errorOutput = e.toString();
         }
         return result;
     }
