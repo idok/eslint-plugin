@@ -8,5 +8,5 @@ public final class ESLintIcons {
     private ESLintIcons() {
     }
 
-    public static final Icon ESLint = IconLoader.getIcon("/icons/fileTypes/eslint.png", ESLintIcons.class);
+    public static final Icon ESLint = IconLoader.getIcon("/icons/fileTypes/eslint16x16.png", ESLintIcons.class);
 }
