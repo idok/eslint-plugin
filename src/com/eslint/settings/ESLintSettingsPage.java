@@ -22,6 +22,7 @@ import com.intellij.util.ui.UIUtil;
 import com.intellij.webcore.ui.SwingHelper;
 import com.wix.settings.ValidationInfo;
 import com.wix.settings.ValidationUtils;
+import com.wix.settings.Validator;
 import com.wix.ui.PackagesNotificationPanel;
 import com.wix.utils.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -40,9 +41,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ESLintSettingsPage implements Configurable {
-    public static final String FIX_IT = "Fix it";
-    public static final String HOW_TO_USE_ESLINT = "How to Use ESLint";
-    public static final String HOW_TO_USE_LINK = "https://github.com/idok/eslint-plugin";
+    private static final String FIX_IT = "Fix it";
+    private static final String HOW_TO_USE_ESLINT = "How to Use ESLint";
+    private static final String HOW_TO_USE_LINK = "https://github.com/idok/eslint-plugin";
     protected Project project;
 
     private JCheckBox pluginEnabledCheckbox;
@@ -149,9 +150,10 @@ public class ESLintSettingsPage implements Configurable {
         extensionsLabel.setEnabled(enabled);
     }
 
-    private void validateField(List<ValidationInfo> errors, TextFieldWithHistoryWithBrowseButton field, boolean allowEmpty, String message) {
+    private void validateField(Validator validator, TextFieldWithHistoryWithBrowseButton field, boolean allowEmpty, String message) {
         if (!validatePath(field.getChildComponent().getText(), allowEmpty)) {
-            addError(errors, field.getChildComponent().getTextEditor(), message, FIX_IT);
+            validator.add(field.getChildComponent().getTextEditor(), message, FIX_IT);
+//            addError(validator, field.getChildComponent().getTextEditor(), message, FIX_IT);
         }
     }
 
@@ -159,28 +161,29 @@ public class ESLintSettingsPage implements Configurable {
         if (!pluginEnabledCheckbox.isSelected()) {
             return;
         }
-        List<ValidationInfo> errors = new ArrayList<ValidationInfo>();
-        validateField(errors, eslintBinField2, false, "Path to eslint is invalid {{LINK}}");
-        validateField(errors, eslintrcFile, true, "Path to eslintrc is invalid {{LINK}}"); //Please correct path to
-        validateField(errors, nodeInterpreterField, false, "Path to node interpreter is invalid {{LINK}}");
+        Validator validator = new Validator();
+        validateField(validator, eslintBinField2, false, "Path to eslint is invalid {{LINK}}");
+        validateField(validator, eslintrcFile, true, "Path to eslintrc is invalid {{LINK}}"); //Please correct path to
+        validateField(validator, nodeInterpreterField, false, "Path to node interpreter is invalid {{LINK}}");
         if (!validateDirectory(customRulesPathField.getText(), true)) {
-            addError(errors, customRulesPathField, "Path to custom rules is invalid {{LINK}}", FIX_IT);
+            addError(validator, customRulesPathField, "Path to custom rules is invalid {{LINK}}", FIX_IT);
         }
         if (!validateDirectory(rulesPathField.getChildComponent().getText(), true)) {
-            addError(errors, rulesPathField.getChildComponent().getTextEditor(), "Path to rules is invalid {{LINK}}", FIX_IT);
+            addError(validator, rulesPathField.getChildComponent().getTextEditor(), "Path to rules is invalid {{LINK}}", FIX_IT);
         }
         if (!validateExt(textFieldExt.getText())) {
-            addError(errors, textFieldExt, "Extensions format is invalid, should be e.g. .js,.jsx without white space {{LINK}}", FIX_IT);
+            addError(validator, textFieldExt, "Extensions format is invalid, should be e.g. .js,.jsx without white space {{LINK}}", FIX_IT);
         }
-        if (errors.isEmpty() && !project.isDefault()) {
+        if (validator.isEmpty() && !project.isDefault()) {
             getVersion();
         }
-        packagesNotificationPanel.processErrors(errors);
+        packagesNotificationPanel.processErrors(validator);
     }
 
-    private static void addError(List<ValidationInfo> errors, @Nullable JTextComponent textComponent, @NotNull String errorHtmlDescriptionTemplate, @NotNull String linkText) {
-        ValidationInfo error = new ValidationInfo(textComponent, errorHtmlDescriptionTemplate, linkText);
-        errors.add(error);
+    private static void addError(Validator validator, @Nullable JTextComponent textComponent, @NotNull String errorHtmlDescriptionTemplate, @NotNull String linkText) {
+        validator.add(textComponent, errorHtmlDescriptionTemplate, linkText);
+//        ValidationInfo error = new ValidationInfo(textComponent, errorHtmlDescriptionTemplate, linkText);
+//        errors.add(error);
     }
 
     private static boolean validateExt(String ext) {
