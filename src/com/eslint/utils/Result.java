@@ -39,4 +39,10 @@ public class Result {
         }
         return result;
     }
+
+    public static Result createError(String error) {
+        Result result = new Result();
+        result.errorOutput = error;
+        return result;
+    }
 }

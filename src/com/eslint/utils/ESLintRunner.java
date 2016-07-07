@@ -53,6 +53,7 @@ public final class ESLintRunner {
         return NodeRunner.execute(commandLine, TIME_OUT);
     }
 
+    @NotNull
     public static Result lint(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir, @Nullable String ext) {
         ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(cwd, path, nodeInterpreter, eslintBin, eslintrc, rulesdir, ext);
         try {
@@ -62,8 +63,8 @@ public final class ESLintRunner {
             LOG.warn("Could not lint file", e);
             ESLintProjectComponent.showNotification("Error running ESLint inspection: " + e.getMessage() + "\ncwd: " + cwd + "\ncommand: " + eslintBin, NotificationType.WARNING);
             e.printStackTrace();
+            return Result.createError(e.getMessage());
         }
-        return null;
     }
 
     @NotNull
