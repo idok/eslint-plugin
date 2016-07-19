@@ -2,7 +2,6 @@ package com.eslint.actions;
 
 import com.eslint.ESLintProjectComponent;
 import com.eslint.utils.ESLintRunner;
-import com.eslint.utils.Result;
 import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -36,11 +35,14 @@ public class ESLintFixAction extends AnAction implements DumbAware {
             }
 //            Result result = ESLintRunner.lint(project.getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath);
 
-            ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(project.getBasePath(), file.getPath(), component);
-            try {
-                ESLintRunner.fix(settings);
-            } catch (ExecutionException e1) {
-                e1.printStackTrace();
+            if (project.getBasePath() != null) {
+                ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(project.getBasePath(), file.getPath(), component);
+                try {
+                    ESLintRunner.fix(settings);
+                    file.refresh(false, false);
+                } catch (ExecutionException e1) {
+                    e1.printStackTrace();
+                }
             }
         }
     }
