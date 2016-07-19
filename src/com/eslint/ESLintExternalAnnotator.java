@@ -227,7 +227,8 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
         try {
             LOG.info("Running ESLint inspection");
             PsiFile file = collectedInfo.psiFile;
-            ESLintProjectComponent component = file.getProject().getComponent(ESLintProjectComponent.class);
+            Project project = file.getProject();
+            ESLintProjectComponent component = project.getComponent(ESLintProjectComponent.class);
             if (!component.isSettingsValid() || !component.isEnabled() || !isJavaScriptFile(file, component.ext)) {
                 return null;
             }
@@ -237,14 +238,14 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
             if (actualCodeFile == null || actualCodeFile.getFile() == null) {
                 return null;
             }
-            relativeFile = FileUtils.makeRelative(new File(file.getProject().getBasePath()), actualCodeFile.getActualFile());
-            Result result = ESLintRunner.lint(file.getProject().getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.settings.ext);
+            relativeFile = FileUtils.makeRelative(new File(project.getBasePath()), actualCodeFile.getActualFile());
+            Result result = ESLintRunner.lint(project.getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.settings.ext);
             actualCodeFile.deleteTemp();
             if (StringUtils.isNotEmpty(result.errorOutput)) {
                 component.showInfoNotification(result.errorOutput, NotificationType.WARNING);
                 return null;
             }
-            Document document = PsiDocumentManager.getInstance(file.getProject()).getDocument(file);
+            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
             if (document == null) {
                 component.showInfoNotification("Error running ESLint inspection: Could not get document for file " + file.getName(), NotificationType.WARNING);
                 LOG.error("Could not get document for file " + file.getName());
