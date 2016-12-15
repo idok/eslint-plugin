@@ -34,22 +34,22 @@ To get started, you need to set the ESLint plugin settings:<br/>
 * Go to preferences, ESLint plugin page and check the Enable plugin.
 * Set the path to the nodejs interpreter bin file.
 * Select whether to let eslint search for ```.eslintrc``` file
-* Set the path to the eslint bin file. should point to ```<project path>node_modules/eslint/bin/eslint.js``` if you installed locally or ```/usr/local/bin/eslint``` if you installed globally. 
-  * For Windows: install eslint globally and point to the eslint cmd file like, e.g.  ```C:\Users\<username>\AppData\Roaming\npm\eslint.cmd```
+* Set the path to the eslint **package directory**. Should point to ```<project path>node_modules/eslint``` if you installed locally or ```/usr/local/lib/node_modules/eslint``` if you installed globally. 
+  * For Windows: install eslint globally and point to the eslint cmd file like, e.g.  ```C:\Users\<username>\AppData\Roaming\npm\node_modules\eslint```
 * Set the ```.eslintrc``` file, or eslint will use the default settings.
 * You can also set a path to a custom rules directory.
 * By default, eslint plugin annotate the editor with warning or error based on the eslint configuration, you can check the 'Treat all eslint issues as warnings' checkbox to display all issues from eslint as warnings.
 
 Configuration:<br/>
-![ESLint config](https://raw.githubusercontent.com/idok/eslint-plugin/master/doc/config.png)
+![ESLint config](doc/config.png?raw=true)
 
 
 Inspection:<br/>
-![ESLint inline](https://raw.githubusercontent.com/idok/eslint-plugin/master/doc/inspect-inline.png)
+![ESLint inline](doc/inspect-inline.png?raw=true)
 
 
 Analyze Code:<br/>
-![ESLint inline](https://raw.githubusercontent.com/idok/eslint-plugin/master/doc/inspect.png)
+![ESLint inline](doc/inspect.png?raw=true)
 
 ### A Note to contributors ###
 ESLint plugin uses the code from [here](https://github.com/idok/scss-lint-plugin/tree/master/intellij-common) as a module, to run the project you need to clone that project as well.
