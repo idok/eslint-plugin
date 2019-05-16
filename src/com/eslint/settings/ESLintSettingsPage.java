@@ -5,11 +5,9 @@ import com.eslint.utils.ESLintFinder;
 import com.eslint.utils.ESLintRunner;
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.execution.ExecutionException;
-import com.intellij.javascript.nodejs.NodeDetectionUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiManager;
@@ -20,7 +18,7 @@ import com.intellij.ui.TextFieldWithHistoryWithBrowseButton;
 import com.intellij.util.NotNullProducer;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.webcore.ui.SwingHelper;
-import com.wix.settings.ValidationInfo;
+import com.wix.nodejs.NodeDetectionUtil;
 import com.wix.settings.ValidationUtils;
 import com.wix.settings.Validator;
 import com.wix.ui.PackagesNotificationPanel;
@@ -37,9 +35,12 @@ import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+//import com.intellij.javascript.nodejs.NodeDetectionUtil;
+
+//public class ESLintSettingsPage extends SearchableConfigurable.Parent.Abstract implements Configurable.NoScroll {
 public class ESLintSettingsPage implements Configurable {
     private static final String FIX_IT = "Fix it";
     private static final String HOW_TO_USE_ESLINT = "How to Use ESLint";
@@ -66,6 +67,8 @@ public class ESLintSettingsPage implements Configurable {
     private JLabel rulesDirectoryLabel1;
     private JTextField textFieldExt;
     private JLabel extensionsLabel;
+    private JCheckBox autoFixCheckbox;
+    private JCheckBox reportUnusedCheckbox;
     private final PackagesNotificationPanel packagesNotificationPanel;
 
     public ESLintSettingsPage(@NotNull final Project project) {
@@ -100,7 +103,7 @@ public class ESLintSettingsPage implements Configurable {
         errorPanel.add(this.packagesNotificationPanel.getComponent(), BorderLayout.CENTER);
 
         DocumentAdapter docAdp = new DocumentAdapter() {
-            protected void textChanged(DocumentEvent e) {
+            protected void textChanged(@NotNull DocumentEvent e) {
                 updateLaterInEDT();
             }
         };
@@ -116,7 +119,7 @@ public class ESLintSettingsPage implements Configurable {
         if (project.isDefault()) {
             return null;
         }
-        return new File(project.getBaseDir().getPath());
+        return new File(Objects.requireNonNull(project.getBasePath()));
     }
 
     private void updateLaterInEDT() {
@@ -139,6 +142,8 @@ public class ESLintSettingsPage implements Configurable {
         searchForEslintrcInRadioButton.setEnabled(enabled);
         useProjectEslintrcRadioButton.setEnabled(enabled);
         eslintBinField2.setEnabled(enabled);
+        reportUnusedCheckbox.setEnabled(enabled);
+        autoFixCheckbox.setEnabled(enabled);
         nodeInterpreterField.setEnabled(enabled);
         ESLintConfigFilePathLabel.setEnabled(enabled);
         rulesDirectoryLabel.setEnabled(enabled);
@@ -174,14 +179,14 @@ public class ESLintSettingsPage implements Configurable {
         if (!validateExt(textFieldExt.getText())) {
             addError(validator, textFieldExt, "Extensions format is invalid, should be e.g. .js,.jsx without white space {{LINK}}", FIX_IT);
         }
-        if (validator.isEmpty() && !project.isDefault()) {
+        if (!validator.hasErrors() && !project.isDefault()) {
             getVersion();
         }
         packagesNotificationPanel.processErrors(validator);
     }
 
     private static void addError(Validator validator, @Nullable JTextComponent textComponent, @NotNull String errorHtmlDescriptionTemplate, @NotNull String linkText) {
-        validator.add(textComponent, errorHtmlDescriptionTemplate, linkText);
+        validator.add((JTextField) textComponent, errorHtmlDescriptionTemplate, linkText);
 //        ValidationInfo error = new ValidationInfo(textComponent, errorHtmlDescriptionTemplate, linkText);
 //        errors.add(error);
     }
@@ -253,7 +258,7 @@ public class ESLintSettingsPage implements Configurable {
                 return FileUtils.toAbsolutePath(newFiles);
             }
         });
-        SwingHelper.installFileCompletionAndBrowseDialog(project, eslintBinField2, "Select ESLint.js cli", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
+        SwingHelper.installFileCompletionAndBrowseDialog(project, eslintBinField2, "Select ESLint.js Cli", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
     private void configESLintRulesField() {
@@ -264,7 +269,7 @@ public class ESLintSettingsPage implements Configurable {
                 return ESLintFinder.tryFindRulesAsString(getProjectPath());
             }
         });
-        SwingHelper.installFileCompletionAndBrowseDialog(project, rulesPathField, "Select Built in rules", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
+        SwingHelper.installFileCompletionAndBrowseDialog(project, rulesPathField, "Select Built in Rules", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
     private void configESLintRcField() {
@@ -275,7 +280,7 @@ public class ESLintSettingsPage implements Configurable {
                 return ESLintFinder.searchForESLintRCFiles(getProjectPath());
             }
         });
-        SwingHelper.installFileCompletionAndBrowseDialog(project, eslintrcFile, "Select ESLint config", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
+        SwingHelper.installFileCompletionAndBrowseDialog(project, eslintrcFile, "Select ESLint Config", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
     private void configNodeField() {
@@ -287,7 +292,7 @@ public class ESLintSettingsPage implements Configurable {
                 return FileUtils.toAbsolutePath(newFiles);
             }
         });
-        SwingHelper.installFileCompletionAndBrowseDialog(project, nodeInterpreterField, "Select Node interpreter", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
+        SwingHelper.installFileCompletionAndBrowseDialog(project, nodeInterpreterField, "Select Node Interpreter", FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor());
     }
 
     @Nls
@@ -317,6 +322,8 @@ public class ESLintSettingsPage implements Configurable {
     public boolean isModified() {
         Settings s = getSettings();
         return pluginEnabledCheckbox.isSelected() != s.pluginEnabled ||
+                autoFixCheckbox.isSelected() != s.autoFix ||
+                reportUnusedCheckbox.isSelected() != s.reportUnused ||
                 !areEqual(eslintBinField2, s.eslintExecutable) ||
                 !areEqual(nodeInterpreterField, s.nodeInterpreter) ||
                 treatAllEslintIssuesCheckBox.isSelected() != s.treatAllEslintIssuesAsWarnings ||
@@ -331,7 +338,7 @@ public class ESLintSettingsPage implements Configurable {
     }
 
     @Override
-    public void apply() throws ConfigurationException {
+    public void apply() {
         saveSettings();
         PsiManager.getInstance(project).dropResolveCaches();
     }
@@ -339,6 +346,8 @@ public class ESLintSettingsPage implements Configurable {
     protected void saveSettings() {
         Settings settings = getSettings();
         settings.pluginEnabled = pluginEnabledCheckbox.isSelected();
+        settings.autoFix = autoFixCheckbox.isSelected();
+        settings.reportUnused = reportUnusedCheckbox.isSelected();
         settings.eslintExecutable = eslintBinField2.getChildComponent().getText();
         settings.nodeInterpreter = nodeInterpreterField.getChildComponent().getText();
         settings.eslintRcFile = getESLintRCFile();
@@ -357,6 +366,8 @@ public class ESLintSettingsPage implements Configurable {
         Settings settings = getSettings();
         setEnabledState(settings.pluginEnabled);
         pluginEnabledCheckbox.setSelected(settings.pluginEnabled);
+        autoFixCheckbox.setSelected(settings.autoFix);
+        reportUnusedCheckbox.setSelected(settings.reportUnused);
         eslintBinField2.getChildComponent().setText(settings.eslintExecutable);
         eslintrcFile.getChildComponent().setText(settings.eslintRcFile);
         nodeInterpreterField.getChildComponent().setText(settings.nodeInterpreter);
@@ -378,6 +389,11 @@ public class ESLintSettingsPage implements Configurable {
     public void disposeUIResources() {
     }
 
+//    @Override
+//    protected Configurable[] buildConfigurables() {
+//        return new Configurable[0];
+//    }
+
     protected Settings getSettings() {
         return Settings.getInstance(project);
     }
@@ -386,4 +402,10 @@ public class ESLintSettingsPage implements Configurable {
         // TODO: place custom component creation code here
         usageLink = SwingHelper.createWebHyperlink(HOW_TO_USE_ESLINT, HOW_TO_USE_LINK);
     }
+
+//    @NotNull
+//    @Override
+//    public String getId() {
+//        return "com.eslint.elintconfig";
+//    }
 }

@@ -4,12 +4,13 @@ import com.eslint.utils.ESLintFinder;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@State(name = "ESLintProjectComponent",
-        storages = {
-                @Storage(id = "default", file = StoragePathMacros.PROJECT_FILE),
-                @Storage(id = "dir", file = StoragePathMacros.PROJECT_CONFIG_DIR + "/eslintPlugin.xml", scheme = StorageScheme.DIRECTORY_BASED)})
+@State(
+        name = "ESLintProjectComponent",
+        storages = {@Storage("eslintPlugin.xml")}
+)
 public class Settings implements PersistentStateComponent<Settings> {
     public String eslintRcFile = ESLintFinder.ESLINTRC;
     public String rulesPath = "";
@@ -18,6 +19,8 @@ public class Settings implements PersistentStateComponent<Settings> {
     public String nodeInterpreter;
     public boolean treatAllEslintIssuesAsWarnings;
     public boolean pluginEnabled;
+    public boolean autoFix;
+    public boolean reportUnused;
     public String ext = "";
 
     protected Project project;
@@ -35,11 +38,11 @@ public class Settings implements PersistentStateComponent<Settings> {
     }
 
     @Override
-    public void loadState(Settings state) {
+    public void loadState(@NotNull Settings state) {
         XmlSerializerUtil.copyBean(state, this);
     }
 
     public String getVersion() {
-        return nodeInterpreter + eslintExecutable + eslintRcFile + rulesPath + builtinRulesPath + ext;
+        return nodeInterpreter + eslintExecutable + eslintRcFile + rulesPath + builtinRulesPath + ext + autoFix + reportUnused;
     }
 }

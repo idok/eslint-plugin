@@ -5,6 +5,7 @@ import com.eslint.fixes.BaseActionFix;
 import com.eslint.fixes.Fixes;
 import com.eslint.fixes.SuppressActionFix;
 import com.eslint.fixes.SuppressLineActionFix;
+import com.eslint.settings.ESLintSettingsPage;
 import com.eslint.utils.ESLintRunner;
 import com.eslint.utils.Result;
 import com.eslint.utils.VerifyMessage;
@@ -18,6 +19,9 @@ import com.intellij.lang.javascript.JavaScriptFileType;
 import com.intellij.lang.javascript.linter.JSLinterUtil;
 import com.intellij.lang.javascript.psi.JSFile;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -34,6 +38,8 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings;
+import com.intellij.util.ThrowableRunnable;
+import com.intellij.util.ui.UIUtil;
 import com.wix.ActualFile;
 import com.wix.ThreadLocalActualFile;
 import com.wix.annotator.ExternalLintAnnotationInput;
@@ -51,7 +57,7 @@ import java.io.File;
  */
 public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnotationInput, ExternalLintAnnotationResult<Result>> {
 
-    public static final ESLintExternalAnnotator INSTANCE = new ESLintExternalAnnotator();
+    //    public static final ESLintExternalAnnotator INSTANCE = new ESLintExternalAnnotator();
     private static final Logger LOG = Logger.getInstance(ESLintBundle.LOG_ID);
     private static final String MESSAGE_PREFIX = "ESLint: ";
     private static final Key<ThreadLocalActualFile> ESLINT_TEMP_FILE_KEY = Key.create("ESLINT_TEMP_FILE");
@@ -218,7 +224,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
     }
 
     private static boolean isJavaScriptFile(PsiFile file, String ext) {
-        return file instanceof JSFile && file.getFileType().equals(JavaScriptFileType.INSTANCE) || isInList(file.getName(), ext);
+        return file instanceof JSFile && file.getFileType().equals(JavaScriptFileType.INSTANCE) || (!StringUtils.isEmpty(ext) && isInList(file.getName(), ext));
     }
 
     @Nullable
@@ -239,7 +245,29 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
                 return null;
             }
             relativeFile = FileUtils.makeRelative(new File(project.getBasePath()), actualCodeFile.getActualFile());
-            Result result = ESLintRunner.lint(project.getBasePath(), relativeFile, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.settings.ext);
+            Result result = ESLintRunner.lint(project.getBasePath(), relativeFile, component);
+
+            if (component.settings.autoFix) {
+//            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+//            document.
+//            Document document = PsiDocumentManager.getInstance(project).getDocument(file);
+                // read lock
+//            ApplicationManager.getApplication().runWriteAction()
+//            ApplicationManager.getApplication().runWriteAction()
+                ApplicationManager.getApplication().invokeLater(new Runnable() {
+                    public void run() {
+                        file.getVirtualFile().refresh(false, false);
+                    }
+                }, ModalityState.NON_MODAL);
+
+//            WriteAction.run(() -> file.getVirtualFile().refresh(false, false));
+//            UIUtil.invokeLaterIfNeeded(new Runnable() {
+//                public void run() {
+//                    file.getVirtualFile().refresh(false, false);
+//                }
+//            });
+            }
+
             actualCodeFile.deleteTemp();
             if (StringUtils.isNotEmpty(result.errorOutput)) {
                 component.showInfoNotification(result.errorOutput, NotificationType.WARNING);
@@ -251,7 +279,7 @@ public class ESLintExternalAnnotator extends ExternalAnnotator<ExternalLintAnnot
                 LOG.error("Could not get document for file " + file.getName());
                 return null;
             }
-            return new ExternalLintAnnotationResult<Result>(collectedInfo, result);
+            return new ExternalLintAnnotationResult<>(collectedInfo, result);
         } catch (Exception e) {
             LOG.error("Error running ESLint inspection: ", e);
             ESLintProjectComponent.showNotification("Error running ESLint inspection: " + e.getMessage(), NotificationType.ERROR);

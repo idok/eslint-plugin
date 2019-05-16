@@ -33,6 +33,8 @@ public class ESLintProjectComponent implements ProjectComponent {
     public String nodeInterpreter;
     public boolean treatAsWarnings;
     public boolean pluginEnabled;
+    public boolean autoFix;
+    public boolean reportUnused;
 
     public static final String PLUGIN_NAME = "ESLint plugin";
 
@@ -120,6 +122,8 @@ public class ESLintProjectComponent implements ProjectComponent {
         treatAsWarnings = settings.treatAllEslintIssuesAsWarnings;
         pluginEnabled = settings.pluginEnabled;
         ext = settings.ext;
+        autoFix = settings.autoFix;
+        reportUnused = settings.reportUnused;
 
         RuleCache.initializeFromPath(project, this);
 

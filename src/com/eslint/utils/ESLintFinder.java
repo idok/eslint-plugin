@@ -75,8 +75,8 @@ public final class ESLintFinder {
     /**
      * find possible eslint rc files
      *
-     * @param projectRoot
-     * @return
+     * @param projectRoot project root
+     * @return list
      */
     public static List<String> searchForESLintRCFiles(final File projectRoot) {
         FilenameFilter filter = new FilenameFilter() {

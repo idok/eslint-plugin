@@ -9,7 +9,7 @@ import java.net.URL;
 /**
  * @author idok
  */
-public final class TestUtils {
+final class TestUtils {
 
     private TestUtils() {
     }
@@ -18,7 +18,7 @@ public final class TestUtils {
 
     private static String TEST_DATA_PATH;
 
-    public static String getTestDataPath() {
+    static String getTestDataPath() {
         if (TEST_DATA_PATH == null) {
             ClassLoader loader = TestUtils.class.getClassLoader();
             URL resource = loader.getResource("testData");

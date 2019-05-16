@@ -29,13 +29,16 @@ public final class ESLintRunner {
         public String cwd;
         public String targetFile;
         public String ext;
+        public boolean fix;
+        public boolean reportUnused;
     }
 
     public static ESLintSettings buildSettings(@NotNull String cwd, @NotNull String path, @NotNull ESLintProjectComponent component) {
-        return ESLintRunner.buildSettings(cwd, path, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.ext);
+        return buildSettings(cwd, path, component.nodeInterpreter, component.eslintExecutable, component.eslintRcFile, component.customRulesPath, component.ext, component.autoFix, component.reportUnused);
     }
 
-    public static ESLintSettings buildSettings(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir, @Nullable String ext) {
+    private static ESLintSettings buildSettings(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc,
+                                                @Nullable String rulesdir, @Nullable String ext, boolean autoFix, boolean reportUnused) {
         ESLintRunner.ESLintSettings settings = new ESLintRunner.ESLintSettings();
         settings.cwd = cwd;
         settings.eslintExecutablePath = eslintBin;
@@ -44,6 +47,8 @@ public final class ESLintRunner {
         settings.config = eslintrc;
         settings.targetFile = path;
         settings.ext = ext;
+        settings.fix = autoFix;
+        settings.reportUnused = reportUnused;
         return settings;
     }
 
@@ -54,18 +59,32 @@ public final class ESLintRunner {
     }
 
     @NotNull
-    public static Result lint(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir, @Nullable String ext) {
-        ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(cwd, path, nodeInterpreter, eslintBin, eslintrc, rulesdir, ext);
+    public static Result lint(@NotNull String cwd, @NotNull String path, @NotNull ESLintProjectComponent component) {
+        ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(cwd, path, component);
         try {
             ProcessOutput output = ESLintRunner.lint(settings);
             return Result.processResults(output);
         } catch (ExecutionException e) {
             LOG.warn("Could not lint file", e);
-            ESLintProjectComponent.showNotification("Error running ESLint inspection: " + e.getMessage() + "\ncwd: " + cwd + "\ncommand: " + eslintBin, NotificationType.WARNING);
+            ESLintProjectComponent.showNotification("Error running ESLint inspection: " + e.getMessage() + "\ncwd: " + cwd + "\ncommand: " + component.eslintExecutable, NotificationType.WARNING);
             e.printStackTrace();
             return Result.createError(e.getMessage());
         }
     }
+
+//    @NotNull
+//    public static Result lint(@NotNull String cwd, @NotNull String path, @NotNull String nodeInterpreter, @NotNull String eslintBin, @Nullable String eslintrc, @Nullable String rulesdir, @Nullable String ext, boolean autoFix) {
+//        ESLintRunner.ESLintSettings settings = ESLintRunner.buildSettings(cwd, path, nodeInterpreter, eslintBin, eslintrc, rulesdir, ext, autoFix);
+//        try {
+//            ProcessOutput output = ESLintRunner.lint(settings);
+//            return Result.processResults(output);
+//        } catch (ExecutionException e) {
+//            LOG.warn("Could not lint file", e);
+//            ESLintProjectComponent.showNotification("Error running ESLint inspection: " + e.getMessage() + "\ncwd: " + cwd + "\ncommand: " + eslintBin, NotificationType.WARNING);
+//            e.printStackTrace();
+//            return Result.createError(e.getMessage());
+//        }
+//    }
 
     @NotNull
     public static ProcessOutput fix(@NotNull ESLintSettings settings) throws ExecutionException {

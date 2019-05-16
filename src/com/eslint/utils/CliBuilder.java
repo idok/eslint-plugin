@@ -14,6 +14,7 @@ final class CliBuilder {
     public static final String C = "-c";
     public static final String FIX = "--fix";
     public static final String FORMAT = "--format";
+    public static final String REPORT_UNUSED = "--report-unused-disable-directives";
     public static final String JSON = "json";
 
     private CliBuilder() {
@@ -35,6 +36,12 @@ final class CliBuilder {
         }
         if (StringUtil.isNotEmpty(settings.ext)) {
             CLI.addParam(commandLine, EXT, settings.ext);
+        }
+        if (settings.fix) {
+            commandLine.addParameter(FIX);
+        }
+        if (settings.reportUnused) {
+            commandLine.addParameter(REPORT_UNUSED);
         }
         CLI.addParam(commandLine, FORMAT, JSON);
         return commandLine;

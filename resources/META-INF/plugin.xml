@@ -1,7 +1,7 @@
-<idea-plugin version="2" url="https://github.com/idok/eslint-plugin">
+<idea-plugin url="https://github.com/idok/eslint-plugin">
     <id>com.wix.eslint</id>
     <name>ESLint</name>
-    <version>1.0.34</version>
+    <version>1.0.36</version>
     <vendor email="sir_simon_x@yahoo.com" url="https://github.com/idok/eslint-plugin">Ido</vendor>
     <category>HTML/JavaScript Development</category>
     <description><![CDATA[
@@ -13,6 +13,8 @@
     ]]></description>
 
     <change-notes><![CDATA[
+       <p>1.0.36 Bug fixes</p>
+       <p>1.0.35 Bug fixes</p>
        <p>1.0.34 Bug fixes</p>
        <p>1.0.33 Bug fixes</p>
        <p>1.0.32 Bug fixes</p>
@@ -49,7 +51,7 @@
     <depends>com.intellij.modules.lang</depends>
     <!--<depends>com.intellij.modules.platform</depends>-->
     <depends>JavaScript</depends>
-    <depends optional="true" config-file="config.xml">org.jetbrains.plugins.yaml</depends>
+    <!--<depends optional="true" config-file="config.xml">org.jetbrains.plugins.yaml</depends>-->
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="139"/>
@@ -63,7 +65,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <projectService serviceImplementation="com.eslint.settings.Settings"/>
-        <projectConfigurable implementation="com.eslint.settings.ESLintSettingsPage"/>
+        <projectConfigurable instance="com.eslint.settings.ESLintSettingsPage" displayName="ESLint Settings" />
         <localInspection language="JavaScript" groupPath="JavaScript" shortName="ESLintInspection"
                          enabledByDefault="true" level="ERROR"
                          bundle="com.eslint.ESLintBundle"
@@ -76,8 +78,8 @@
         <projectService serviceImplementation="com.eslint.config.ESLintConfigFileListener"/>
         <fileTypeFactory implementation="com.eslint.config.ESLintConfigFileTypeFactory"/>
 
-        <completion.contributor order="first" language="JavaScript" implementationClass="com.eslint.config.ESLintConfigCompletionContributor"/>
-        <annotator language="JSON" implementationClass="com.eslint.config.ESLintConfigAnnotator"/>
+        <!--<completion.contributor order="first" language="JavaScript" implementationClass="com.eslint.config.ESLintConfigCompletionContributor"/>-->
+        <!--<annotator language="JSON" implementationClass="com.eslint.config.ESLintConfigAnnotator"/>-->
     </extensions>
 
     <application-components>
@@ -97,5 +99,4 @@
             <add-to-group group-id="CodeMenu" anchor="last"/>
         </action>
     </actions>
-
 </idea-plugin>

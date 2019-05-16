@@ -1,7 +1,6 @@
 package com.eslint;
 
 import com.eslint.settings.Settings;
-import com.eslint.utils.ESLintRunnerTest;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.*;
 
